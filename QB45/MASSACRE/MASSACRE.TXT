@@ -1,0 +1,5671 @@
+DECLARE SUB wingame (names$, currentplayer!, playerscastles!)
+DECLARE SUB savegame (skillevel, movement, names$, players, soldiers, knights, catapults, gold, xposarmy, yposarmy, land, playerscastles, numofcastles, homarmy, xposcastle, yposcastle, currentplayer, landposition)
+DECLARE SUB loadgame (skillevel, movement, names$, players, soldiers, knights, catapults, gold, xposarmy, yposarmy, land, playerscastles, numofcastles, homearmy, xposcastle, yposcastle, currentplayer, landposition)
+DECLARE SUB Kimland (c!)
+DECLARE SUB drawvertbridge (x!, y!)
+DECLARE SUB drawhorobridge (x!, y!)
+DECLARE SUB changemen (currentplayer!, soldiers!, homearmy!, whichcast)
+DECLARE SUB largewindow (x!, y!)
+DECLARE SUB smallwindow (x1!, x2!, y!, fill!)
+DECLARE SUB smalldoor (x!, y!)
+DECLARE SUB castlebattle (numofcastles, land, xcast, ycast, players, shield!, homearmy!, playerscastles!, xposcastle!, yposcastle!, attacker!, defender!, currentplayer!, soldiers!, death!, gold!, defense!, offense!, knights!, catapults!)
+DECLARE SUB FieldBattle (names$, players, land, landposition, xposarmy, yposarmy, xposcastle, yposcastle, skillevel, attacker, defender, currentplayer, playerscastles, soldiers, knights, catapults, death, gold, defense, offense)
+DECLARE SUB statusreport (movement, xposcastle, yposcastle, gold, land, homearmy, soldiers, knights, catapults, names$, xposarmy, players)
+DECLARE SUB TransferMen (scenario, skipit, soldiers!, homearmy!, currentplayer!, xposcastle, yposcastle, xposarmy, yposarmy, playerscastles)
+DECLARE SUB soldier (x!, y!, currentplayer!, q!, playerscastles!)
+DECLARE SUB MoveArmy (death, names$, gold, movement, scenario, skillevel, landposition, currentplayer, xposcastle, yposcastle, players, playerscastles, xposarmy, yposarmy, land, firstround)
+DECLARE SUB lookatmap (homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+DECLARE SUB Buildacastle (landposition, land, numofcastles, pause, scenario, currentplayer!, xposcastle, yposcastle, players, happen)
+DECLARE SUB training (currentplayer, skillevel, movement, gold)
+DECLARE SUB moraltour (currentplayer!, land!, soldiers)
+DECLARE SUB raidcastle (scenario, xposcastle, yposcastle, names$, currentplayer!, gold!, homearmy!, playerscastles, players)
+DECLARE SUB BuildArmy (pause, scenario, homearmy, currentplayer, soldiers, knights, catapults, gold, land, playerscastles, xposcastle, yposcastle)
+DECLARE SUB drawplaymenu (degrees!, drawmenu, pause, topscroll)
+DECLARE SUB playmenu (choice, names$, currentplayer)
+DECLARE SUB slantpicture ()
+DECLARE SUB asknames (playerscastles, players!, names$)
+DECLARE SUB Markland (x!, y!, c!, players)
+DECLARE SUB NumberOfPlayers (currentplayer, players!, computers!, scenario)
+DECLARE SUB selectcastle (players!, computers!, playerscastles, scenario)
+DECLARE SUB Startpicture ()
+DECLARE SUB castle (x!, y!, q!)
+DECLARE SUB shootstar ()
+DECLARE FUNCTION currentcolor! (currentplayer!, playerscastles)
+DECLARE FUNCTION DegToRad! (degrees!)
+DECLARE FUNCTION dimsize! (x2!, x1!, y2!, y1!)
+DECLARE FUNCTION attackrisk! (offense, skillevel, currentplayer)
+DECLARE FUNCTION defrisk! (defense, skillevel, currentplayer)
+CONST pi = 3.14592, yes = 1, no = 0
+CONST space = 32, esc = 27, enter = 13, tabkey = 9
+CONST down = 80, up = 72, left = 75, right = 77
+CONST home = 71, endk = 79, pgdn = 81, pgup = 73
+CONST ins = 82, del = 83, null = 0
+CONST ctrld = 4, ctrlg = 7, ctrlh = 8, ctrls = 19, ctrlv = 22
+players = 5
+DIM SHARED playerscastles(players)
+DIM SHARED names$(players)
+DIM SHARED homearmy(4, players)
+x1 = 23: x2 = 75: y1 = 25: y2 = 70
+DIM SHARED topscroll(dimsize(x1, x2, y1, y2))
+DIM SHARED numofcastles(players)
+DIM SHARED soldiers(players)
+DIM SHARED knights(players)
+DIM SHARED catapults(players)
+DIM SHARED gold(players)
+DIM SHARED land(players)
+DIM SHARED skillevel(players)
+DIM SHARED xposcastle(4, players)  ' #4 is the home castle
+DIM SHARED yposcastle(4, players)  ' #4 is the home castle
+DIM SHARED landposition(32, 24)
+DIM SHARED xposarmy(players)
+DIM SHARED yposarmy(players)
+DIM SHARED movement(players)
+players = 0
+                                       
+                                       
+                                       
+                                       
+                                        '                        ÚÄÄÄÄÄÄÄÄÄ¿
+CLS                                     '                        ³ScenariosÆÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+SCREEN 12                               '                        ÀÒÄÄÄÄÄÄÄÄÙ                  º
+CALL Startpicture                       '                         º 1. Markland               º
+scenario = 2 'default                                             º 2. Kimland                º
+CALL NumberOfPlayers(currentplayer, players, computers, scenario)'º 3. Ryanland               º
+IF computers = 10 THEN
+CALL NumberOfPlayers(currentplayer, players, computers, scenario)
+END IF
+IF movement(1) = 0 THEN ' if a game was loaded                    º 4. Jamieland              º
+SELECT CASE scenario                    '                         º 5. Cooland                º
+CASE 1                                  '                         º 6. Awesomeland            º
+CALL Markland(x, y, c, players)         '                         ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+CASE 2
+CALL Kimland(c)
+CASE 3
+'CALL Ryanland
+CASE 4
+'CALL Jamieland
+CASE 5
+'CALL cooland
+CASE 6
+'CALL awesomeland
+END SELECT
+CALL selectcastle(players, computers, playerscastles, scenario)
+CALL asknames(playerscastles, players, names$)
+
+SCREEN 12
+currentplayer = 1
+
+       FOR i = 1 TO players
+        numofcastles(i) = 1
+        movement(i) = 3
+        skillevel(i) = 1
+        soldiers(i) = 27
+        gold(i) = 300
+        homearmy(4, i) = 40
+        land(i) = 1
+        NEXT i
+        FOR a = 1 TO players
+        casttodraw = playerscastles(a)
+        SELECT CASE scenario
+        CASE 1
+                SELECT CASE casttodraw
+                CASE 1: x = 180: y = 340
+                CASE 2: x = 520: y = 380
+                CASE 3: x = 400: y = 220
+                CASE 4: x = 340: y = 100
+                CASE 5: x = 120: y = 120
+                END SELECT
+        CASE 2
+                SELECT CASE casttodraw
+                CASE 1: x = 120: y = 80
+                CASE 2: x = 80:  y = 460
+                CASE 3: x = 360: y = 360
+                CASE 4: x = 560: y = 400
+                CASE 5: x = 460: y = 100
+                END SELECT
+        CASE 3
+        CASE 4
+        CASE 5
+        CASE 6
+        END SELECT
+        xposarmy(a) = x        'has been altered slightlty
+        yposarmy(a) = y        '
+        xposcastle(4, a) = x   '
+        yposcastle(4, a) = y   '
+        NEXT a
+       
+        firstround = yes
+        firstime = yes
+END IF
+firstime = yes
+'*****************| Looping part of program that goes indefinetely starts- |*
+'******************| here!
+pause = 999
+DO
+        IF firstime = yes THEN
+        
+        CALL drawplaymenu(degrees!, drawmenu, pause, topscroll)
+        pause = 0
+        ELSE
+        pause = 0
+       
+        CALL drawplaymenu(degrees!, drawmenu, pause, topscroll)
+        END IF
+       
+        CALL playmenu(choice, names$, currentplayer)
+        'yposcastle(3, currentplayer) = 440
+        SELECT CASE choice
+       
+        CASE 8
+        CALL BuildArmy(pause, scenario, homearmy, currentplayer, soldiers, knights, catapults, gold, land, playerscastles, xposcastle, yposcastle)
+       
+        CASE 9
+        CALL raidcastle(scenario, xposcastle, yposcastle, names$, currentplayer, gold, homearmy, playerscastles, players)
+       
+        CASE 10
+        CALL moraltour(currentplayer, land, soldiers)
+        
+        CASE 11
+        IF gold(currentplayer) >= 100 THEN
+        CALL training(currentplayer, skillevel, movement, gold)
+        
+        ELSE
+        happen = 1
+        LOCATE 14, 49: PRINT "                      "
+        LOCATE 15, 49: PRINT " Sorry, but you don't "
+        LOCATE 16, 49: PRINT " enough gold. (100)   "
+        LOCATE 17, 49: PRINT "                      "
+        DO
+        LOOP WHILE INKEY$ = ""
+        END IF
+       
+        CASE 12
+        happen = 0
+        IF numofcastles(currentplayer) < 4 THEN
+                CALL Buildacastle(landposition, land, numofcastles, pause, scenario, currentplayer, xposcastle, yposcastle, players, happen)
+                IF happen = 0 THEN
+                gold(currentplayer) = gold(currentplayer) - 300
+                END IF
+        ELSE
+                happen = 1
+        END IF
+
+        CASE 13
+        happen = 1
+        CALL lookatmap(homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+       
+        CASE 14
+        CALL savegame(skillevel, movement, names$, players, soldiers, knights, catapults, gold, xposarmy, yposarmy, land, playerscastles, numofcastles, homarmy, xposcastle, yposcastle, currentplayer, landposition)
+        happen = 1
+        END SELECT
+       
+        IF happen <> 1 THEN
+        CALL MoveArmy(death, names$, gold, movement, scenario, skillevel, landposition, currentplayer, xposcastle, yposcastle, players, playerscastles, xposarmy, yposarmy, land, firstround)
+        firstime = no
+        q = currentplayer
+        gold(q) = gold(q) + land(q) * 5 + (land(q) * 5) * numofcastles(currentplayer) / 4
+        gold(q) = CINT(gold(q))
+        currentplayer = 1 + currentplayer
+        END IF
+        happen = 0
+        IF death <> 0 THEN
+                place = currentplayer
+                curcolor = currentcolor(currentplayer, playerscastles)
+                currentplayer = place
+                FOR i = 1 TO 32
+                FOR j = 1 TO 24
+                IF landposition(i, j) = curcolor THEN landposition(i, j) = 0
+                NEXT j
+                NEXT i
+                FOR i = 1 TO players
+                        IF i > death THEN
+                                t = i: from = i - 1
+                                soldiers(from) = soldiers(t)
+                                knights(from) = soldiers(t)
+                                catapults(from) = catapults(t)
+                                gold(from) = gold(t)
+                                xposarmy(from) = xposarmy(t)
+                                yposarmy(from) = yposarmy(from)
+                                land(from) = land(t)
+                                playerscastles(from) = playerscastles(t)
+                                numofcastles(from) = numofcastles(t)
+                                FOR j = 1 TO 4
+                                        homearmy(j, from) = homearmy(j, t)
+                                        xposcastle(j, from) = xposcastle(j, t)
+                                        yposcastle(j, from) = yposcastle(j, t)
+                                NEXT j
+                               
+                        END IF
+                NEXT i
+                players = players - 1
+                death = 0
+        END IF
+       
+        IF currentplayer > players THEN
+        currentplayer = 1
+        firstround = no
+        END IF
+        IF players = 1 THEN
+        CALL wingame(names$, currentplayer, playerscastlesj)
+        SYSTEM                ' end the game and close open files
+        END IF
+LOOP
+
+SUB asknames (playerscastles, players!, names$)
+
+CLS
+SCREEN 9 '640 x 340
+COLOR 8, 7
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT
+PRINT , "ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»"
+PRINT , "º                                            º"
+PRINT , "º                                            º"
+PRINT , "º                                            º"
+PRINT , "º                                            º"
+PRINT , "º                                            º"
+PRINT , "ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼"
+row = 10: column = 17
+DIM letter$(23)
+        DO WHILE x <= players - 1
+        x = 1 + x
+        j = 0
+        LOCATE 13, 27: PRINT "                                "
+                DO
+                'PRINT players
+                    LOCATE row, column: PRINT "Player"; x; ", a brave and courageous knight"
+                LOCATE row + 1, column: PRINT "such as thou must have more worth than a"
+                LOCATE row + 2, column: PRINT "number.  Will you please give the name you"
+                LOCATE row + 3, column: PRINT "wish to be known by?"
+                       
+                        
+                        j = j + 1
+                        IF j > 21 THEN j = 20
+                        l$ = ""
+                                DO
+                                DO
+                                l$ = INKEY$
+                                LOOP WHILE l$ = ""
+                                LOOP WHILE ASC(l$) = 0
+                       
+                        IF l$ <> CHR$(8) THEN
+                        letter$(j) = l$
+                        ELSE
+                       
+                        END IF
+
+                        IF j >= 20 THEN
+                        BEEP
+                        ELSE
+                        LOCATE 13, 37 + j: PRINT letter$(j)
+                        END IF
+                  '******| Checks for backspace     
+                  IF l$ = CHR$(8) AND j = 0 THEN
+                  LOCATE 13, 37: PRINT " "
+                  END IF
+                 
+                  IF l$ = CHR$(8) AND j > 1 THEN
+                  LOCATE 13, (37 + j) - 1: PRINT "  "
+                  letter$(j) = " "
+                  j = j - 2
+                  
+                  LOCATE 13, 60: PRINT "º"
+                  END IF
+                 
+                  IF l$ = CHR$(13) THEN
+                 
+              
+                  IF j = 1 THEN
+                  x = x - 1
+                  EXIT DO
+                  END IF
+
+                  SELECT CASE x
+                  CASE 1
+                  FOR v = 1 TO j
+                  names$(1) = names$(1) + letter$(v)
+                  NEXT v
+                  names$(x) = RTRIM$(names$(x))
+                  names$(x) = LTRIM$(names$(x))
+                  IF players = 1 THEN EXIT SUB
+                  
+                  CASE 2
+                  FOR v = 1 TO j
+                  names$(2) = names$(2) + letter$(v)
+                  NEXT v
+                  names$(x) = RTRIM$(names$(x))
+                  names$(x) = LTRIM$(names$(x))
+                  IF players = 2 THEN EXIT SUB
+                 
+                  CASE 3
+                  FOR v = 1 TO j
+                  names$(3) = names$(3) + letter$(v)
+                  NEXT v
+                  names$(x) = RTRIM$(names$(x))
+                  names$(x) = LTRIM$(names$(x))
+                  IF players = 3 THEN EXIT SUB
+                 
+                  CASE 4
+                  FOR v = 1 TO j
+                  names$(4) = names$(4) + letter$(v)
+                  NEXT v
+                  names$(x) = RTRIM$(names$(x))
+                  names$(x) = LTRIM$(names$(x))
+                  IF players = 4 THEN EXIT SUB
+                 
+                  CASE 5
+                  FOR v = 1 TO j
+                  names$(5) = names$(5) + letter$(v)
+                  NEXT v
+                  names$(x) = RTRIM$(names$(x))
+                  names$(x) = LTRIM$(names$(x))
+                  IF players = 5 THEN EXIT SUB
+                
+                  END SELECT
+                  EXIT DO
+                  END IF
+                  LOOP
+          LOOP
+END SUB
+
+FUNCTION attackrisk (offense, skillevel, currentplayer)
+RANDOMIZE TIMER
+SELECT CASE offense
+CASE 1
+attackrisk = 80 * RND + 20 + 7 * skillevel(currentplayer)
+CASE 2
+attackrisk = 40 * RND + 20 + 6 * skillevel(currentplayer)
+CASE 3
+attackrisk = 20 * RND + 20 + 5 * skillevel(currentplayer)
+END SELECT
+END FUNCTION
+
+SUB awesomeland
+skipit = c
+CLS
+SCREEN 12: c = 2
+colornumber = 65536 * 30 + 256 * 30 + 30
+blue = CINT(17 * .95)    '17
+red = CINT(36 * .95)     '36
+green = CINT(50 * .95)   '50
+colornumber = 65536 * blue + 256 * green + red
+PALETTE c, colornumber
+DO
+COLOR 1
+SELECT CASE y
+        CASE 0
+        CASE 20
+        IF x > 520 AND x < 560 THEN COLOR c
+        CASE 40
+        IF x > 160 AND x < 200 THEN COLOR c
+        IF x > 480 AND x < 580 THEN COLOR c
+        CASE 60
+        IF x > 140 AND x < 220 THEN COLOR c
+        IF x > 180 AND x < 500 THEN COLOR c
+        IF x > 500 AND x < 620 THEN COLOR c
+        CASE 80
+        IF x > 40 AND x < 160 THEN COLOR c
+        IF x > 160 AND x < 500 THEN COLOR c
+        IF x > 520 AND x < 620 THEN COLOR c
+        CASE 100
+        IF x > 40 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 500 THEN COLOR c
+        IF x > 520 AND x < 600 THEN COLOR c
+        CASE 120
+        IF x > 40 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 520 THEN COLOR c
+        IF x > 520 AND x < 600 THEN COLOR c
+        CASE 140
+        IF x > 40 AND x < 480 THEN COLOR c
+        IF x > 520 AND x < 580 THEN COLOR c
+        CASE 160
+        IF x > 60 AND x < 260 THEN COLOR c
+        IF x > 260 AND x < 420 THEN COLOR c
+        IF x > 480 AND x < 600 THEN COLOR c
+        CASE 180
+        IF x > 60 AND x < 240 THEN COLOR c
+        IF x > 280 AND x < 400 THEN COLOR c
+        IF x > 420 AND x < 620 THEN COLOR c
+        CASE 200
+        IF x > 0 AND x < 40 THEN COLOR c
+        IF x > 80 AND x < 220 THEN COLOR c
+        IF x > 280 AND x < 360 THEN COLOR c
+        IF x > 400 AND x < 620 THEN COLOR c
+        CASE 220
+        IF x > 0 AND x < 60 THEN COLOR c
+        IF x > 120 AND x < 220 THEN COLOR c
+        IF x > 220 AND x < 340 THEN COLOR c
+        IF x > 380 AND x < 620 THEN COLOR c
+        CASE 240
+        IF x > 20 AND x < 120 THEN COLOR c
+        IF x > 160 AND x < 340 THEN COLOR c
+        IF x > 360 AND x < 540 THEN COLOR c
+        IF x > 560 AND x < 600 THEN COLOR c
+        CASE 260
+        IF x > 20 AND x < 160 THEN COLOR c
+        IF x > 180 AND x < 320 THEN COLOR c
+        IF x > 380 AND x < 560 THEN COLOR c
+        CASE 280
+        IF x > 0 AND x < 340 THEN COLOR c
+        IF x > 400 AND x < 580 THEN COLOR c
+        CASE 300
+        IF x > 0 AND x < 360 THEN COLOR c
+        IF x > 380 AND x < 580 THEN COLOR c
+        CASE 320
+        IF x > 0 AND x < 580 THEN COLOR c
+        CASE 340
+        IF x > 20 AND x < 600 THEN COLOR c
+        CASE 360
+        IF x > 40 AND x < 600 THEN COLOR c
+        CASE 380
+        IF x > 60 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 200 THEN COLOR c
+        IF x > 220 AND x < 620 THEN COLOR c
+        CASE 400
+        IF x > 60 AND x < 120 THEN COLOR c
+        IF x > 240 AND x < 620 THEN COLOR c
+        CASE 420
+        IF x = 0 THEN COLOR c
+        IF x > 40 AND x < 120 THEN COLOR c
+        IF x > 240 AND x < 600 THEN COLOR c
+        CASE 440
+        IF x = 0 THEN COLOR c
+        IF x > 20 AND x < 140 THEN COLOR c
+        IF x > 220 AND x < 560 THEN COLOR c
+        CASE 460
+        IF x < 160 THEN COLOR c
+        IF x > 200 AND x < 540 THEN COLOR c
+END SELECT
+d = 3 - c:
+LINE (x, y)-(x + (17 + d), y + (17 + d)), , BF
+x = x + 20
+IF x = 640 THEN
+y = 20 + y
+x = 0
+END IF
+LOOP WHILE y < 480
+END SUB
+
+SUB Buildacastle (landposition, land, numofcastles, pause, scenario, currentplayer, xposcastle, yposcastle, players, happen)
+CLS
+SCREEN 12
+PALETTE
+c = 100
+pause = 5893
+CALL lookatmap(homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+ 
+  placecurrentplayer = currentplayer
+  FOR castles = 1 TO 4
+  FOR t = 1 TO players
+  x = xposcastle(castles, t)
+  y = yposcastle(castles, t)
+ 
+  currentplayer = t
+  q = currentcolor(currentplayer!, playerscastles)
+  IF xposcastle(castles, t) <> 0 AND yposcastle(castles, t) <> 0 THEN
+  CALL castle(x, y, q)
+  END IF
+  NEXT t
+  NEXT castles
+  currentplayer = placecurrentplayer
+ 
+  COLOR 0
+x = 10: y = 10: a = 8 * 27: B = 8 * 5.5
+LINE (x, y)-(x + a, y + B), , BF
+COLOR currentcolor(currentplayer, playerscastles)
+
+IF gold(currentplayer) >= 300 THEN
+LOCATE 2, 4: PRINT "Where would you like the"
+LOCATE 3, 4: PRINT "new castle to be built?"
+ELSE
+LOCATE 2, 4: PRINT "Sorry, you don't have "
+LOCATE 3, 4: PRINT "enough money. (300)"
+DO
+LOOP WHILE INKEY$ = ""
+happen = 1
+EXIT SUB
+END IF
+COLOR 4
+x = 319: y = 219
+LINE (x, y)-(x + 20, y + 20), , B
+DO
+DO
+pastx = x
+pasty = y
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+choice$ = RIGHT$(choice$, 1)
+SELECT CASE choice$
+
+CASE CHR$(right)
+IF x + 20 > 620 THEN
+BEEP
+ELSE
+x = x + 20
+COLOR 0
+LINE (pastx, pasty)-(pastx + 20, pasty + 20), , B
+COLOR 4
+LINE (x, y)-(x + 20, y + 20), , B
+END IF
+CASE CHR$(left)
+IF x - 20 < -1 THEN
+BEEP
+ELSE
+x = x - 20
+COLOR 0
+LINE (pastx, pasty)-(pastx + 20, pasty + 20), , B
+COLOR 4
+LINE (x, y)-(x + 20, y + 20), , B
+END IF
+CASE CHR$(up)
+IF y - 20 < -1 THEN
+BEEP
+ELSE
+y = y - 20
+COLOR 0
+LINE (pastx, pasty)-(pastx + 20, pasty + 20), , B
+COLOR 4
+LINE (x, y)-(x + 20, y + 20), , B
+END IF
+CASE CHR$(down)
+IF y + 20 > 460 THEN
+BEEP
+ELSE
+y = y + 20
+COLOR 0
+LINE (pastx, pasty)-(pastx + 20, pasty + 20), , B
+COLOR 4
+LINE (x, y)-(x + 20, y + 20), , B
+END IF
+CASE CHR$(enter)
+position = POINT(x + 10, y + 7)
+       
+        IF position = 2 THEN
+        COLOR 0
+        LINE (pastx, pasty)-(pastx + 20, pasty + 20), , B
+        
+         placex = x
+         placey = y
+         x = x + 1  '4
+         y = y + 21 '18
+         SELECT CASE playerscastles(currentplayer)
+         CASE 1
+         q = 9
+         CALL castle(x, y, q)
+         CASE 2
+         q = 4
+         CALL castle(x, y, q)
+         CASE 3
+         q = 10
+         CALL castle(x, y, q)
+         CASE 4
+         q = 14
+         CALL castle(x, y, q)
+          CASE 5
+         colornumber = 65536 * 40 + 256 * 20 + 40
+          PALETTE 13, colornumber
+          q = 13
+          CALL castle(x, y, q)
+          END SELECT
+          x = placex + 1
+          y = placey + 1 + 20
+        IF xposcastle(2, currentplayer) <> 0 AND xposcastle(3, currentplayer) = 0 THEN
+        xposcastle(3, currentplayer) = x: yposcastle(3, currentplayer) = y
+        numofcastles(currentplayer) = numofcastles(currentplayer) + 1
+        END IF
+        IF xposcastle(1, currentplayer) <> 0 AND xposcastle(2, currentplayer) = 0 THEN
+        xposcastle(2, currentplayer) = x: yposcastle(2, currentplayer) = y
+        numofcastles(currentplayer) = numofcastles(currentplayer) + 1
+        END IF
+        IF xposcastle(1, currentplayer) = 0 THEN
+        xposcastle(1, currentplayer) = x: yposcastle(1, currentplayer) = y
+        numofcastles(currentplayer) = numofcastles(currentplayer) + 1
+        END IF
+        land(currentplayer) = land(currentplayer) + 1
+        y = y - 20
+        IF landposition(x / 20, y / 20) <> 0 THEN
+                placecurrentplayer = currentplayer
+                FOR i = 1 TO players
+                currentplayer = i
+                        IF currentcolor(currentplayer, playerscastles) = landposition(x / 20, y / 20) THEN
+                        land(currentplayer) = land(currentplayer) - 1
+                        END IF
+                NEXT i
+                currentplayer = placecurrentplayer
+        END IF
+        landposition(x / 20, y / 20) = 0
+        a& = TIMER
+        DO
+        B& = TIMER: IF B& - a& > 1 THEN EXIT DO
+        LOOP WHILE INKEY$ = ""
+        EXIT SUB
+        END IF
+
+END SELECT
+LOOP WHILE INKEY$ = ""
+LOOP
+END SUB
+
+
+SUB BuildArmy (pause, scenario, homearmy, currentplayer, soldiers, knights, catapults, gold, land, playerscastles, xposcastle, yposcastle)
+
+SCREEN 12
+CLS
+colornumber = 65536 * 63 + 256 * 63 + 63
+PALETTE 0, colornumber
+COLOR currentcolor(currentplayer!, playerscastles)
+FOR x = 1 TO 120
+LINE (120 - x, 120 - x)-(519 + x, 359 + x), , B
+NEXT x
+
+COLOR 8
+LINE (136, 360)-(536, 376), , BF
+LINE (520, 135)-(536, 376), , BF
+row = 8
+lines = 13
+'****************| Asks what kind of build army |***************************
+horo = 20
+LOCATE row + 5, horo: PRINT "First of all, what would you like to do:"
+LOCATE row + 7, horo: PRINT " 1. Build campaign army"
+LOCATE row + 8, horo: PRINT " 2. Build home army"
+LOCATE row + 9, horo: PRINT " 3. Transfer men from one army to another"
+DO
+DO
+armychoice$ = INKEY$
+LOOP WHILE armychoice$ = ""
+
+SELECT CASE armychoice$
+        CASE "1"
+        armychoice = 1
+       
+        CASE "2"
+        armychoice = 2
+        c = 100
+        PALETTE
+        CLS
+        x = 0: y = 0
+        pause = 5893
+        CALL lookatmap(homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+        FOR i = 1 TO 4
+                q = currentcolor(currentplayer, playerscastles)
+                x = xposcastle(i, currentplayer)
+                y = yposcastle(i, currentplayer)
+                IF x <> 0 THEN
+                CALL castle(x, y, q)
+                COLOR 15: LOCATE CINT(y / 16) - 1, CINT(x / 8): PRINT i; homearmy(i, currentplayer); "Men"
+                END IF
+        NEXT i
+        COLOR 15: LOCATE 23, 10: PRINT "Press the # of the castle to add men to"
+        DO
+        DO
+        currentcastle$ = INKEY$
+        LOOP WHILE currentcastle$ = ""
+        IF VAL(currentcastle$) > 0 AND VAL(currentcastle$) < 5 THEN
+        IF xposcastle(VAL(currentcastle$), currentplayer) <> 0 THEN
+        currentcastle = VAL(currentcastle$)
+        SCREEN 12
+        CLS
+        colornumber = 65536 * 63 + 256 * 63 + 63
+        PALETTE 0, colornumber
+        COLOR currentcolor(currentplayer!, playerscastles)
+        FOR x = 1 TO 120
+        LINE (120 - x, 120 - x)-(519 + x, 359 + x), , B
+        NEXT x
+        COLOR 8
+        LINE (136, 360)-(536, 376), , BF
+        LINE (520, 135)-(536, 376), , BF
+        row = 8
+        lines = 13
+        EXIT DO
+        END IF
+        END IF
+        LOOP
+       
+       
+       
+        CASE "3"
+        CALL TransferMen(scenario, skipit, soldiers!, homearmy!, currentplayer!, xposcastle, yposcastle, xposarmy, yposarmy, playerscastles)
+       
+        EXIT SUB
+       
+        CASE ELSE
+        BEEP
+END SELECT
+IF armychoice <> 0 THEN EXIT DO
+LOOP
+
+FOR q = 1 TO 6
+LOCATE 12 + q, 16: PRINT "                                               "
+NEXT q
+'*******************| Builds the army |*************************************
+        IF armychoice = 1 THEN
+        COLOR 9
+        LOCATE row + 5, 25: PRINT "Soldiers   (3 gold) ", soldiers(currentplayer)
+        LOCATE row + 1, 25: PRINT "    ( Building Campaign Army )"
+        END IF
+       
+        IF armychoice = 2 THEN
+        COLOR 9
+        LOCATE row + 5, 25: PRINT "Soldiers   (3 gold) ", homearmy(currentcastle, currentplayer)
+        LOCATE row + 1, 25: PRINT "      ( Building Home Army )"
+        END IF
+COLOR 8
+LOCATE row + 2, 25: PRINT "Your have"; gold(currentplayer); "gold good sir."
+COLOR 4
+LOCATE 10, 34: PRINT gold
+COLOR 8
+
+LOCATE row + 3, 25: PRINT "Your army is:"
+LOCATE row + 7, 25: PRINT "Knights    (15 gold)", knights(currentplayer)
+LOCATE row + 9, 25: PRINT "Catapults  (40 gold)", catapults(currentplayer)
+LOCATE row + 12, 25: PRINT "Exit"
+
+DO
+        COLOR 4
+        LOCATE 10, 34: PRINT gold(currentplayer)
+        COLOR 8
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+
+choice$ = RIGHT$(choice$, 1)
+        IF armychoice = 1 THEN
+        sol = soldiers(currentplayer)
+        END IF
+        IF armychoice = 2 THEN
+        sol = homearmy(currentcastle, currentplayer)
+        END IF
+SELECT CASE choice$
+       
+        CASE CHR$(up)
+        IF lines = 13 THEN BEEP
+        IF lines <> 13 THEN
+        
+        SELECT CASE lines
+       
+        CASE 15
+        COLOR 8
+        LOCATE row + 7, 25: PRINT "Knights    (15 gold)", knights(currentplayer)
+        COLOR 9
+        LOCATE row + 5, 25: PRINT "Soldiers   (3 gold) ", sol
+        lines = lines - 2
+       
+        CASE 17
+        COLOR 8
+        LOCATE row + 9, 25: PRINT "Catapults  (40 gold)", catapults(currentplayer)
+        COLOR 9
+        LOCATE row + 7, 25: PRINT "Knights    (15 gold)", knights(currentplayer)
+        lines = lines - 2
+       
+        CASE 20
+        COLOR 8
+        LOCATE row + 12, 25: PRINT "Exit"
+        COLOR 9
+        LOCATE row + 9, 25: PRINT "Catapults  (40 gold)", catapults(currentplayer)
+        lines = lines - 3
+        END SELECT
+        END IF
+
+        CASE CHR$(down)
+        IF lines = 20 THEN BEEP
+        IF lines <> 20 THEN
+        SELECT CASE lines
+      
+        CASE 13
+        COLOR 8
+        LOCATE row + 5, 25: PRINT "Soldiers   (3 gold) ", sol
+        COLOR 9
+        LOCATE row + 7, 25: PRINT "Knights    (15 gold)", knights(currentplayer)
+        lines = lines + 2
+      
+        CASE 15
+        COLOR 8
+        LOCATE row + 7, 25: PRINT "Knights    (15 gold)", knights(currentplayer)
+        COLOR 9
+        LOCATE row + 9, 25: PRINT "Catapults  (40 gold)", catapults(currentplayer)
+        lines = lines + 2
+      
+        CASE 17
+        COLOR 8
+        LOCATE row + 9, 25: PRINT "Catapults  (40 gold)", catapults(currentplayer)
+        COLOR 9
+        LOCATE row + 12, 25: PRINT "Exit"
+        lines = lines + 3
+        END SELECT
+        END IF
+       
+       
+        CASE CHR$(enter)
+        IF lines = 20 THEN EXIT SUB
+        SELECT CASE lines
+       
+        CASE 13
+                IF armychoice = 1 THEN
+                        IF gold(currentplayer) - 3 < 0 THEN
+                        BEEP
+                        ELSE
+                        soldiers(currentplayer) = 1 + soldiers(currentplayer)
+                        gold(currentplayer) = gold(currentplayer) - 3
+                        COLOR 9
+                        LOCATE row + 5, 25: PRINT "Soldiers   (3 gold) ", soldiers(currentplayer)
+                        COLOR 8
+                        END IF
+                END IF
+                IF armychoice = 2 THEN
+                        IF gold(currentplayer) - 3 < 0 THEN
+                        BEEP
+                        ELSE
+                        homearmy(currentcastle, currentplayer) = 1 + homearmy(currentcastle, currentplayer)
+                        gold(currentplayer) = gold(currentplayer) - 3
+                        COLOR 9
+                        LOCATE row + 5, 25: PRINT "Soldiers   (3 gold) ", homearmy(currentcastle, currentplayer)
+                        COLOR 8
+                        END IF
+                END IF
+       
+        CASE 15
+        IF armychoice = 1 THEN
+        IF gold(currentplayer) - 15 < 0 THEN
+        BEEP
+        ELSE
+        knights(currentplayer) = 1 + knights(currentplayer)
+        gold(currentplayer) = gold(currentplayer) - 15
+        COLOR 9
+        LOCATE row + 7, 25: PRINT "Knights    (15 gold)", knights(currentplayer)
+        COLOR 8
+        END IF
+        ELSE
+        BEEP
+        END IF
+       
+        CASE 17
+        IF armychoice = 1 THEN
+        IF gold(currentplayer) - 40 < 0 THEN
+        BEEP
+        ELSE
+        catapults(currentplayer) = 1 + catapults(currentplayer)
+        gold(currentplayer) = gold(currentplayer) - 40
+        COLOR 9
+        LOCATE row + 9, 25: PRINT "Catapults  (40 gold)", catapults(currentplayer)
+        COLOR 8
+        END IF
+        ELSE
+        BEEP
+        END IF
+        END SELECT
+        END SELECT
+       
+       
+        COLOR 4
+        LOCATE 10, 34: PRINT gold(currentplayer)
+        COLOR 8
+LOOP
+END SUB
+
+SUB castle (x, y, q)
+x = x + 3: y = y - 4  'x + 3
+
+a = x - 10
+COLOR 15
+LINE (x, y)-(x + 12, y - 11), , BF
+LINE (x, y - 9)-(x + 2, y - 14), , BF
+LINE (x + 12, y - 9)-(x + 10, y - 14), , BF
+COLOR 8
+LINE (x + 13, y - 14)-(x + 11, y - 19)
+LINE (x + 11, y - 19)-(x + 9, y - 14)
+LINE (x + 9, y - 14)-(x + 13, y - 14)
+PAINT (x + 11, y - 16)
+LINE (a + 13, y - 14)-(a + 11, y - 19)
+LINE (a + 11, y - 19)-(a + 9, y - 14)
+LINE (a + 9, y - 14)-(a + 13, y - 14)
+PAINT (a + 11, y - 16)
+colornumber = 65536 * 45 + 256 * 45 + 45
+PALETTE 5, colornumber
+COLOR 5
+LINE (x + 2, y)-(x + 2, y - 9)
+LINE (x + 10, y)-(x + 10, y - 9)
+COLOR 8
+x = x - 10: y = y + 6
+LINE (x + 13, y - 14)-(x + 11, y - 19)
+LINE (x + 11, y - 19)-(x + 9, y - 14)
+LINE (x + 9, y - 14)-(x + 13, y - 14)
+PAINT (x + 11, y - 16)
+x = x + 10
+LINE (x + 13, y - 14)-(x + 11, y - 19)
+LINE (x + 11, y - 19)-(x + 9, y - 14)
+LINE (x + 9, y - 14)-(x + 13, y - 14)
+PAINT (x + 11, y - 16)
+COLOR 0
+CIRCLE (x + 6, y - 10), 2
+PAINT (x + 6, y - 10)
+LINE (x + 4, y - 6)-(x + 8, y - 9), , BF
+LINE (x + 6, y - 18)-(x + 6, y - 25)
+COLOR q
+LINE (x + 6, y - 22)-(x + 11, y - 25)
+LINE (x + 11, y - 25)-(x + 6, y - 28)
+LINE (x + 6, y - 28)-(x + 6, y - 22)
+PAINT (x + 8, y - 25)
+
+END SUB
+
+SUB castlebattle (numofcastles, land, xcast, ycast, players, shield, homearmy, playerscastles, xposcastle, yposcastle, attacker, defender, currentplayer, soldiers, death, gold, defense, offense, knights, catapults)
+CLS
+SCREEN 12
+num = 65536 * 1 + 256 * 1 + 1
+FOR k = 1 TO 15
+PALETTE k, num
+NEXT k
+CLS
+SCREEN 12
+COLOR 2
+LINE (0, 280)-(640, 480), , BF
+
+COLOR 11
+LINE (0, 0)-(640, 279), , BF
+
+COLOR 8
+LINE (330, 200)-(600, 360), , BF
+LINE (370, 138)-(370, 195), , B
+LINE (560, 138)-(560, 195), , B
+LINE (330, 199)-(600, 199)
+LINE (330, 361)-(600, 361)
+CIRCLE (295, 360), 35, , 3.14, 6.25, .5
+CIRCLE (635, 360), 35, , 3.14, 6.25, .5
+CIRCLE (335, 132), 45, , 4.59, 6.25, .25    '
+CIRCLE (595, 132), 45, , 3.14, 4.82, .25    '
+LINE (335, 50)-(315, 87)
+LINE (335, 50)-(380, 132)
+LINE (595, 50)-(550, 132)
+LINE (595, 50)-(615, 87)
+LINE (260, 360)-(260, 139)
+LINE (330, 360)-(330, 139)
+LINE (600, 360)-(600, 139)
+CIRCLE (295, 132), 45, , 3.14, 6.25, .25
+CIRCLE (635, 132), 45, , 3.14, 6.25, .25
+LINE (295, 50)-(250, 132)
+LINE (295, 50)-(340, 132)
+LINE (635, 50)-(590, 132)
+LINE (635, 50)-(680, 132)
+LINE (370, 170)-(560, 170)
+LINE (330, 195)-(600, 195)
+COLOR 7
+
+LINE (331, 196)-(599, 198), , BF
+LINE (371, 171)-(559, 194), , BF
+LINE (331, 200)-(599, 360), , BF
+PAINT (280, 300), , 8
+PAINT (602, 272), , 8
+PAINT (352, 172), , 8
+PAINT (582, 172), , 8
+COLOR 6
+PAINT (353, 112), , 8
+PAINT (582, 112), , 8
+PAINT (292, 112), , 8
+PAINT (622, 112), , 8
+COLOR 8
+LINE (370, 174)-(560, 174)
+LINE (330, 188)-(351, 176)
+LINE (351, 176)-(343, 176)
+LINE (343, 176)-(330, 183)
+LINE (351, 176)-(351, 195)
+LINE (600, 188)-(579, 176)
+LINE (579, 176)-(586, 176)
+LINE (586, 176)-(600, 183)
+LINE (579, 176)-(579, 194)
+x = 344: y = 170
+CALL smalldoor(x, y)
+x = 580: y = 170
+CALL smalldoor(x, y)
+LINE (395, 130)-(535, 195), , B 'upper section
+COLOR 7
+LINE (396, 131)-(534, 194), , BF' fill in upper section
+LINE (456, 99)-(474, 109), , BF
+COLOR 8
+LINE (435, 110)-(495, 110)
+LINE (435, 110)-(385, 130)
+LINE (495, 110)-(545, 130)
+LINE (545, 130)-(385, 130)
+LINE (455, 98)-(475, 110), , B
+LINE (465, 90)-(453, 98)'uppermost roof
+LINE (465, 90)-(477, 98)
+LINE (453, 98)-(477, 98)
+LINE (465, 90)-(465, 60)
+LINE (465, 60)-(487, 68)
+LINE (487, 68)-(465, 76)
+COLOR 6
+PAINT (465, 120), , 8
+PAINT (465, 93), , 8
+COLOR 8
+x1 = 458: x2 = 470: y = 101: fill = 1
+CALL smallwindow(x1, x2, y, fill)
+x = 463: y = 103
+CALL smalldoor(x, y)
+FOR i = 1 TO 20
+LINE (432 + i * 3, 110)-(432 + i * 3, 105)
+NEXT i
+LINE (435, 107)-(492, 107)
+x = 292: y = 172: CALL largewindow(x, y)
+y = 212: CALL largewindow(x, y)
+y = 252: CALL largewindow(x, y)
+y = 292: CALL largewindow(x, y)
+x = 630: y = 172: CALL largewindow(x, y)
+y = 212: CALL largewindow(x, y)
+y = 252: CALL largewindow(x, y)
+y = 292: CALL largewindow(x, y)
+FOR i = 1 TO 8
+SELECT CASE i
+CASE 1: x = 420: y = 155
+CASE 2: x = 448
+CASE 3: x = 476
+CASE 4: x = 504
+CASE 5: x = 420: y = 177
+CASE 6: x = 448
+CASE 7: x = 476
+CASE 8: x = 504
+END SELECT
+CALL largewindow(x, y)
+'   420 448 476 504
+'155
+'177
+NEXT i
+'*****| Let's draw a moat! |**************
+COLOR 6
+LINE (259, 305)-(206, 380)
+LINE -(219, 395)
+LINE -(640, 399)
+LINE -(640, 449)
+LINE -(164, 442)
+LINE -(134, 417)              '280, 305
+LINE -(152, 362)
+LINE -(220, 293)'
+LINE -(259, 285)
+LINE -(259, 305)
+PAINT (352, 422), , 6
+COLOR 1
+LINE (259, 301)-(234, 332)
+LINE -(203, 380)
+LINE -(218, 398)
+LINE -(640, 406)
+LINE -(640, 446)
+LINE -(498, 441)
+LINE -(327, 441)
+LINE -(165, 432)
+LINE -(144, 415)
+LINE -(154, 376)
+LINE -(184, 334)
+LINE -(223, 294)
+LINE -(259, 287)
+LINE -(259, 301)
+PAINT (352, 422), , 1
+'***************| Let's draw a drawbridge |**************
+COLOR 8
+LINE (425, 300)-(425, 361)
+LINE (505, 361)-(505, 300)
+CIRCLE (465, 300), 40, , 0, 3.14, .75
+LINE (425, 361)-(385, 480)
+LINE (505, 361)-(545, 480)
+COLOR 6: PAINT (462, 422), , 8: COLOR 8
+LINE (428, 361)-(390, 480)
+LINE (502, 361)-(540, 480)
+COLOR 6: PAINT (420, 382), , 8: PAINT (512, 386), , 8: PAINT (534, 452), , 8
+PAINT (450, 382), , 8: PAINT (422, 452), , 8: PAINT (396, 452), , 8
+COLOR 8
+LINE (413, 398)-(518, 398)
+LINE (397, 443)-(533, 443)
+'(413,398),(518,398),(397, 443),(533,443)
+'((416, 398),(515, 398)|(401, 443),(529,443)
+
+pastlength = 99
+y = 398
+x1 = 416
+FOR i = 1 TO 15
+y = y + 3
+increase = .01673176# * pastlength
+linlength = pastlength + increase
+pastlength = linlength
+minus = increase / 2
+x1 = x1 - minus
+x2 = x1 + linlength
+LINE (x1, y)-(x2, y)
+NEXT i
+COLOR 15
+FOR links = 1 TO 100 STEP 2
+factor = links / 100
+xpoint = factor * 20
+ypoint = factor * -190
+x = xpoint + 400
+y = ypoint + 443
+CIRCLE (x, y), 2
+NEXT links
+FOR links = 1 TO 100 STEP 2
+factor = links / 100
+xpoint = factor * -20
+ypoint = factor * -190
+x = xpoint + 531
+y = ypoint + 443
+CIRCLE (x, y), 2
+NEXT links
+LINE (418, 245)-(422, 258), , BF
+LINE (509, 245)-(513, 258), , BF
+COLOR 2: LINE (426, 335)-(504, 360), , BF
+COLOR 8: LINE (426, 334)-(504, 334)
+FOR i = 1 TO 6
+LINE (i + 425, 296 - 1.9 * i)-(i + 425, 360 - (1.6 * i))
+LINE (505 - i, 296 - 1.9 * i)-(505 - i, 360 - (1.6 * i))
+NEXT i
+COLOR 15
+FOR i = 1 TO 7
+LINE (330 + 17 * i, 220)-(330 + 17 * i, 228)
+LINE (600 - 17 * i, 220)-(600 - 17 * i, 228)
+NEXT i
+PALETTE
+colornumber = 65536 * CINT(30 * .7) + 256 * CINT(35 * .7) + CINT(45 * .7)'30,35,45
+PALETTE 6, colornumber
+colornumber = 65536 * 1 + 256 * 1 + 1
+PALETTE 15, colornumber
+'**************| Let's figure out who it is that we're attacking |************
+placecurrentplayer = currentplayer
+        FOR i = 1 TO players
+        currentplayer = i
+                IF currentcolor(currentplayer, playerscastles) = shield THEN
+                defender = currentplayer
+                END IF
+        NEXT i
+currentplayer = placecurrentplayer              ' WE know who it is, but
+'xposcastle(4, players)  ' #4 is the home castle' which castle is it?
+'yposcastle(4, players)  ' #4 is the home castle
+place = currentplayer
+currentplayer = defender
+COLOR currentcolor(currentplayer, playerscastles)
+currentplayer = place
+PAINT (470, 68), , 8
+
+FOR i = 1 TO 4
+        xe = xposcastle(i, defender)
+        ye = yposcastle(i, defender)
+        IF xe - xcast = 0 AND ye - ycast = 0 THEN whichcast = i
+NEXT i
+
+IF defender = currentplayer THEN
+CALL changemen(currentplayer, soldiers, homearmy, whichcast)
+EXIT SUB
+END IF
+
+'*****************************************************************************
+'****************************ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»********************
+'****************************ºThe gruesome killing beginsº********************
+'****************************ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼********************
+'*****************************************************************************
+colornumber = 65536 * 63 + 256 * 63 + 63
+PALETTE 0, colornumber
+COLOR 0
+FOR u = 1 TO 8
+l = l + 1
+LOCATE 1 + l, 2: PRINT "                                       "
+NEXT u
+
+DO
+        FOR n = 1 TO 2
+                IF n = 1 THEN
+                row = 3
+                column = 5
+                COLOR currentcolor(currentplayer, playerscastles)
+                person$ = "Attacker"
+                person = currentplayer
+                solds = soldiers(currentplayer)
+                kn = knights(currentplayer)
+                ca = catapults(currentplayer)
+                ELSE
+             
+                solds = homearmy(whichcast, defender)
+                person$ = "Defender"
+                person = defender
+                row = 3
+                column = 22
+                place = currentplayer
+                currentplayer = defender
+                COLOR currentcolor(currentplayer, playerscastles)
+                currentplayer = place
+                kn = 0: ca = 0
+                END IF
+    
+        
+        LOCATE row + 3, column + 12: PRINT "   "
+        LOCATE row + 4, column + 12: PRINT "   "
+        LOCATE row + 5, column + 12: PRINT "   "
+        LOCATE row, column: PRINT person$
+        LOCATE row + 1, column: PRINT names$(person)
+        LOCATE row + 3, column: PRINT "Soldiers"
+        LOCATE row + 3, column + 12: PRINT solds
+        LOCATE row + 4, column: PRINT "Knights"
+        LOCATE row + 4, column + 12: PRINT kn
+        LOCATE row + 5, column: PRINT "Catapults"
+        LOCATE row + 5, column + 12: PRINT ca
+        NEXT n
+
+
+alosses = 0
+closses = 0
+charge = 0
+cntrcharge = 0
+offense = 1: defense = 1
+'****| Attack |*************
+FOR charge = 1 TO 5 - defense
+alosses = 0
+alosses = alosses + soldiers(currentplayer) * (attackrisk(offense, skillevel, currentplayer) / 100)
+alosses = alosses + knights(currentplayer) * (attackrisk(offense, skillevel, currentplayer) / 15)
+alosses = alosses + catapults(currentplayer) * (attackrisk(offense, skillevel, currentplayer) / 6)
+attacklosses = attacklosses + (alosses / 50)
+NEXT charge
+'****| Counter - Attack |****
+FOR cntrcharge = 1 TO 5 - offense
+closses = 0
+closses = closses + homearmy(whichcast, defender) * (defrisk(defense, skillevel, currentplayer) / 100)
+cntratcklosses = cntratcklosses + (closses / 20)
+NEXT cntrcharge
+
+'****| Men Removal |********
+attacklosses = CINT(attacklosses)
+cntratcklosses = CINT(cntratcklosses)
+homearmy(whichcast, defender) = CINT(homearmy(whichcast, defender))
+soldiers(currentplayer) = CINT(soldiers(currentplayer))
+knights(defender) = CINT(knights(defender))
+knights(currentplayer) = CINT(knights(currentplayer))
+catapults(defender) = CINT(catapults(defender))
+catapults(currentplayer) = CINT(catapults(currentplayer))
+morelosses = 0
+IF homearmy(whichcast, defender) = 0 THEN
+morelosses = yes
+ELSE
+        IF homearmy(whichcast, defender) - attacklosses < 0 THEN
+        morelosses = yes
+        attacklosses = attacklosses - homearmy(whichcast, defender)
+       homearmy(whichcast, defender) = 0
+        ELSE
+       homearmy(whichcast, defender) = homearmy(whichcast, defender) - attacklosses
+        attacklosses = 0
+        END IF
+END IF
+
+
+knightsdead = 0
+catsdead = 0
+soldiersdead = 0
+morelosses = 0
+'*****************| Removing attackers losses |******************************
+IF soldiers(currentplayer) = 0 THEN
+morelosses = yes
+ELSE
+        IF soldiers(currentplayer) - cntratcklosses < 0 THEN
+        morelosses = yes
+        cntratcklosses = cntratcklosses - soldiers(currentplayer)
+        soldiers(currentplayer) = 0
+        ELSE
+        soldiers(currentplayer) = soldiers(currentplayer) - cntratcklosses
+        cntratcklosses = 0
+        END IF
+END IF
+
+IF knights(currentplayer) = 0 AND cntratcklosses > 0 THEN
+morelosses = yes
+ELSE
+        IF morelosses = yes THEN
+        knightsdead = knights(currentplayer) - cntratcklosses
+                IF knightsdead < 1 THEN
+                knights(currentplayer) = 0
+                morelosses = yes
+                howmany = ABS(knightsdead)
+                cntratcklosses = cntratcklosses - howmany
+                ELSE
+                morelosses = no
+                knights(currentplayer) = knights(currentplayer) - cntratcklosses
+                END IF
+        END IF
+END IF
+  
+IF morelosses = yes THEN
+catsdead = catapults(currentplayer) - cntratcklosses
+IF catsdead > 0 THEN
+catapults(currentplayer) = catapults(currentplayer) - catsdead
+ELSE
+catapults(currentplayer) = 0
+END IF
+END IF
+IF soldiers(currentplayer) = 0 AND knights(currentplayer) = 0 AND catapults(currentplayer) = 0 THEN
+        COLOR 4
+        SELECT CASE horrible
+        CASE IS < 10: horrible$ = "Horrible"
+        CASE IS < 50: horrible$ = "Fair"
+        CASE IS < 100: horrible$ = "Well"
+        CASE IS < 200: horrible$ = "Good"
+        CASE IS < 500: horrible$ = "Great"
+        CASE IS > 500: horrible$ = "Excellent"
+        END SELECT
+        LOCATE 12, 30: PRINT " ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ» "
+        LOCATE 13, 30: PRINT " º   The Attacker    º "
+        LOCATE 14, 30: PRINT " º  Fought           º "
+        LOCATE 15, 30: PRINT " ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼ "
+        LOCATE 14, 41: PRINT horrible$
+        DO: LOOP WHILE INKEY$ = ""
+        LOCATE 13, 32: PRINT " but the attack "
+        LOCATE 14, 32: PRINT "    failed.     "
+EXIT DO
+END IF
+
+IF homearmy(whichcast, defender) = 0 THEN
+        COLOR 4
+        land(defender) = land(defender) - 1
+        land(currentplayer) = land(currentplayer) + 1
+        FOR i = 1 TO 4
+                x = xposcastle(i, currentplayer)
+                y = yposcastle(i, currentplayer)
+                IF x = 0 AND y = 0 THEN
+                        xposcastle(i, currentplayer) = xposcastle(whichcast, defender)
+                        yposcastle(i, currentplayer) = yposcastle(whichcast, defender)
+                        xposcastle(whichcast, defender) = 0
+                        yposcastle(whichcast, defender) = 0
+                        EXIT FOR
+                END IF
+        NEXT i
+                        xposcastle(whichcast, defender) = 0
+                        yposcastle(whichcast, defender) = 0
+                        numofcastles(defender) = numofcastles(defender) - 1
+                        numofcastles(currentplayer) = numofcastles(currentplayer) + 1
+        SELECT CASE horrible
+        CASE IS < 10: horrible$ = "Horrible"
+        CASE IS < 50: horrible$ = "Fair"
+        CASE IS < 100: horrible$ = "Well"
+        CASE IS < 200: horrible$ = "Good"
+        CASE IS < 500: horrible$ = "Great"
+        CASE IS > 500: horrible$ = "Excellent"
+        END SELECT
+        LOCATE 12, 30: PRINT " ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ» "
+        LOCATE 13, 30: PRINT " º   The Defender    º "
+        LOCATE 14, 30: PRINT " º  Fought           º "
+        LOCATE 15, 30: PRINT " ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼ "
+        LOCATE 14, 41: PRINT horrible$
+        DO: LOOP WHILE INKEY$ = ""
+        EXIT DO
+END IF
+horrible = horrible + 1
+LOOP
+'**************| check for someone being put out of the game |****************
+death = defender
+FOR i = 1 TO 4
+IF xposcastle(i, defender) <> 0 OR yposcastle(i, defender) <> 0 THEN death = 0
+NEXT i
+
+END SUB
+
+SUB changemen (currentplayer, soldiers, homearmy, whichcast)
+
+COLOR 4
+LOCATE 25, 10: PRINT "                                  "
+LOCATE 26, 10: PRINT " Do you wish to (add / take away) "
+LOCATE 27, 10: PRINT "   men from this castle? (Y/N)    "
+LOCATE 28, 10: PRINT "                                  "
+DO
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+choice$ = UCASE$(choice$)
+IF choice$ = "N" THEN EXIT SUB
+IF choice$ = "Y" THEN
+        DO
+                LOCATE 23, 10: PRINT "                                  "
+                LOCATE 24, 10: PRINT "    Soldiers in Castle:           "
+                LOCATE 24, 34: PRINT homearmy(whichcast, currentplayer)
+                LOCATE 25, 10: PRINT "      Soldiers in Army:           "
+                LOCATE 25, 34: PRINT soldiers(currentplayer)
+                LOCATE 26, 10: PRINT " Use (<,>) to change the # of     "
+                LOCATE 27, 10: PRINT " men in castle.  Enter to accept. "
+                LOCATE 28, 10: PRINT "                                  "
+                DO
+                        choice$ = INKEY$
+                LOOP WHILE choice$ = ""
+               
+                choice$ = RIGHT$(choice$, 1)
+               
+                SELECT CASE choice$
+                        CASE ","
+                        IF homearmy(whichcast, currentplayer) >= 1 THEN
+                        homearmy(whichcast, currentplayer) = homearmy(whichcast, currentplayer) - 1
+                        soldiers(currentplayer) = soldiers(currentplayer) + 1
+                        END IF
+                        CASE "."
+                        IF soldiers(currentplayer) >= 1 THEN
+                        homearmy(whichcast, currentplayer) = homearmy(whichcast, currentplayer) + 1
+                        soldiers(currentplayer) = soldiers(currentplayer) - 1
+                        END IF
+                        CASE CHR$(enter)
+                        EXIT SUB
+                        CASE ELSE
+                        BEEP
+                END SELECT
+        LOOP
+END IF
+LOOP
+END SUB
+
+SUB CoolLand
+
+END SUB
+
+FUNCTION currentcolor (currentplayer, playerscastles)
+PALETTE 5, (65536 * 40 + 256 * 20 + 40)
+x = currentplayer
+IF playerscastles(x) = 1 THEN curcolor = 9
+IF playerscastles(x) = 2 THEN curcolor = 4
+IF playerscastles(x) = 3 THEN curcolor = 10
+IF playerscastles(x) = 4 THEN curcolor = 14
+IF playerscastles(x) = 5 THEN
+colornumber = 65536 * 40 + 256 * 20 + 40
+PALETTE 13, colornumber
+curcolor = 13
+END IF
+currentcolor = curcolor
+END FUNCTION
+
+
+FUNCTION defrisk (defense, skillevel, currentplayer)
+RANDOMIZE TIMER
+SELECT CASE defense
+CASE 1
+defrisk = 80 * RND + 20 + 6 * skillevel(currentplayer)
+CASE 2
+defrisk = 40 * RND + 20 + 5 * skillevel(currentplayer)
+CASE 3
+defrisk = 20 * RND + 20 + 4 * skillevel(currentplayer)
+END SELECT
+
+END FUNCTION
+
+FUNCTION DegToRad! (degrees)
+DEFINT A-Z
+' ============================ DegToRad ================================
+'   Convert degrees to radians, since BASIC trigonometric functions
+'   require radians.
+' ======================================================================
+'
+        DegToRad! = (degrees * 2 * 3.1415) / 360
+
+END FUNCTION
+
+DEFSNG A-Z
+FUNCTION dimsize (x2, x1, y2, y1)
+  dimsize = 4 + INT(((x2 - x1 + 1) * (1) + 7) / 8) * 4 * ((y2 - y1) + 1)
+'                  [{(           )   ( )    }    ]       {(       )    }
+'The bits-per-pixel-per-plane and planes values depend on the
+'specification set in the SCREEN statement. The table below shows the
+'number of bits per pixel per plane and the number of planes for each
+'screen mode.
+
+'  Values for Bits per Pixel per Plane and for Planes
+
+'                 Bits per Pixel
+'  Screen Mode    per Plane        Planes
+'
+'   1               2                1
+'   2               1                1
+'   7               1                4
+'   8               1                4
+'   9               1                2   (if   64K of EGA  memory)
+'                                    4   (if > 64K of EGA  memory)
+'  10               1                2
+'  11               1                1
+'  12               1                4
+'  13               8                1
+'
+'
+'The bytes per element of an array are as follows:
+'
+'  þ Two bytes for an integer array element
+'  þ Four bytes for a long-integer array element
+'  þ Four bytes for a single-precision array element
+'  þ Eight bytes for a double-precision array element
+'
+'For example, suppose you wanted to use the GET statement to store an
+'image in high resolution (SCREEN 2). If the coordinates of the upper-
+'left corner of the image are (0,0), and the coordinates of the lower-
+'right corner are (32,32), then the required size of the array in bytes
+'is 4 + INT((33 * 1 + 7)/8) * 1 * (33), or 169. This means an integer
+'array with 85 elements would be large enough to hold the image.
+
+'Unless the array type is integer or long, the contents of an array
+'after a GET appear meaningless when inspected directly. Examining
+'or manipulating noninteger arrays containing graphics images may cause
+'run-time errors.
+
+'One of the most useful things that can be done with GET and
+'PUT is animation.
+
+END FUNCTION
+
+SUB drawhorobridge (x, y)
+        
+        
+        COLOR 1
+        LINE (x + 1, y - 1)-(x + 19, y - 19), , BF
+        colornumber = 65536 * 30 + 256 * 30 + 30
+        PALETTE 7, colornumber
+        COLOR 7
+        FOR a = 3 TO 15
+        z = 21 - a
+        CIRCLE (x + 11, 20 + y - z), 20, , 1.1, 2.18
+        NEXT a
+        COLOR 0
+        LINE (x, y)-(x + 20, y - 20), , B
+END SUB
+
+SUB drawplaymenu (degrees!, drawmenu, pause, topscroll)
+CLS
+SCREEN 12
+IF pause <> 999 THEN
+blue = CINT(35 * .94)    '27
+red = CINT(55 * .94)     '36
+green = CINT(52 * .94)   '50
+papercolor = 65536 * blue + 256 * green + red
+PALETTE 0, papercolor
+brown = 65536 * 20 + 256 * 20 + 30
+PALETTE 6, brown
+END IF
+COLOR 6'*************| everything is set to be drawn in brown |********************
+radius = 1
+x = 50
+y = 50
+IF pause = 999 THEN
+num = 65536 * 1 + 256 * 1 + 1
+FOR k = 1 TO 15
+PALETTE k, num
+NEXT k
+       
+        FOR degrees = 1 TO 900
+        
+        IF degrees > 345 THEN
+        degrees = 1
+        repeats = 1 + repeats
+        END IF
+
+        degree = degrees + 10
+        r = (r + .023)
+        radius = r
+        IF radius < 1 THEN radius = 1
+
+        radians = (degrees * 2 * pi) / 360
+        radian = (degree * 2 * pi) / 360
+        CIRCLE (x, y), radius, , radians, radian
+         
+          IF radius > 20.5 THEN
+          EXIT FOR
+          END IF
+        NEXT degrees
+PALETTE
+blue = CINT(35 * .94)    '27
+red = CINT(55 * .94)     '36
+green = CINT(52 * .94)   '50
+papercolor = 65536 * blue + 256 * green + red
+PALETTE 0, papercolor
+brown = 65536 * 20 + 256 * 20 + 30
+PALETTE 6, brown
+GET (25, 25)-(75, 70), topscroll
+ELSE
+PUT (25, 25), topscroll, PSET
+END IF
+
+LINE (x, y - 18)-(x + 300, y - 18)
+LINE (x, y - 10.5)-(x + 13.5, y - 10.5)
+LINE (x, y - 3)-(x + 7, y - 3)
+LINE (x + 2, y)-(x + 7, y)
+LINE (x + 1, y + 7)-(x + 13, y + 7)
+LINE (x + 1, y + 15)-(x + 300, y + 15)
+degrees = 90: degree = 270
+        radians = (degrees * 2 * pi) / 360
+        radian = (degree * 2 * pi) / 360
+
+CIRCLE (x + 300, y - 1.4), 16.5, , radian, radians
+x = 3
+y = 140
+'?****** degs = stop,deg = start
+degree = 55: degrees = 320  'deg = 55 degs = 320
+        radians = (degrees * 2 * pi) / 360
+        radian = (degree * 2 * pi) / 360
+CIRCLE (x, y), 100, , radians, radian, 2
+degree = 48: degrees = 320  'deg = 55 degs = 320
+        radians = (degrees * 2 * pi) / 360
+        radian = (degree * 2 * pi) / 360
+CIRCLE (x + 312, y), 100, , radians, radian, 2
+
+degree = 240: degrees = 140  'deg = 48 degs = 320
+        radians = (degrees * 2 * pi) / 360
+        radian = (degree * 2 * pi) / 360
+CIRCLE (x + 80, y + 120), 100, , radians, radian, 2
+CIRCLE (x + 80 + 312, y + 120), 100, , radians, radian, 2
+x1 = 36: x2 = 380: y1 = 39: y2 = 65
+DIM scroll(dimsize(x2, x1, y2, y1))
+GET (x1, y1)-(x2, y2), scroll
+PUT (20, 330), scroll, PSET
+ERASE scroll
+x1 = 300: x2 = 380: y1 = 39: y2 = 65
+DIM edgescroll(dimsize(x2, x1, y2, y1))
+GET (x1, y1)-(x2, y2), edgescroll
+PUT (297, 330), edgescroll, PSET
+ERASE edgescroll
+colornumber = 65536 * 1 + 256 * 1 + 1
+PALETTE 8, colornumber
+COLOR 8
+PAINT (600, 460), , 6
+END SUB
+
+SUB drawvertbridge (x, y)
+colornumber = 65536 * 30 + 256 * 30 + 30
+PALETTE 7, colornumber
+COLOR 7
+        x = x - 1
+        FOR a = 4 TO 17
+        LINE (x + a, y - 1)-(x + a, y - 19)
+        NEXT a
+        LINE (x + 3, y - 6)-(x + 3, y - 14): LINE (x + 18, y - 6)-(x + 18, y - 14)
+
+END SUB
+
+SUB FieldBattle (names$, players, land, landposition, xposarmy, yposarmy, xposcastle, yposcastle, skillevel, attacker, defender, currentplayer, playerscastles, soldiers, knights, catapults, death, gold, defense, offense)
+CLS
+SCREEN 12
+PALETTE
+'WIDTH 80, 60
+
+DIM Battle$(15)    'Battle Ensues!
+Battle$(1) = "B":  Battle$(2) = "a":  Battle$(3) = "t":  Battle$(4) = "t"
+Battle$(5) = "l":  Battle$(6) = "e":  Battle$(8) = "E":  Battle$(9) = "n"
+Battle$(10) = "s": Battle$(11) = "u": Battle$(12) = "e": Battle$(13) = "s"
+Battle$(14) = "!": Battle$(15) = " ": Battle$(7) = " "
+row = 11
+column = 33
+
+FOR i = 1 TO 14
+FOR j = 1 TO 10
+COLOR j + 4
+LOCATE row, column - 11 + i + j: PRINT Battle$(i)
+LOCATE row + i - j, column: PRINT Battle$(i)
+IF i < 8 THEN
+LOCATE row + i + j, column: PRINT Battle$(i)
+LOCATE row, column + 11 + i - j: PRINT Battle$(i)
+END IF
+NEXT j
+LOCATE row, column + i: PRINT Battle$(i)
+IF i = 14 THEN
+LOCATE row + 14, column: PRINT Battle$(i)
+END IF
+NEXT i
+
+DO
+LOOP WHILE INKEY$ = ""
+
+CLS
+COLOR 2
+LINE (0, 300)-(640, 480), , BF
+COLOR 9
+LINE (0, 0)-(640, 300), , BF
+
+COLOR 8
+LINE (0, 300)-(100, 260)
+LINE (100, 260)-(160, 290)
+LINE (140, 300)-(240, 260)
+LINE (240, 260)-(350, 300)
+LINE (330, 294)-(460, 240)
+LINE (460, 240)-(580, 300)
+LINE (521, 271)-(640, 240)
+LINE (272, 272)-(352, 242)
+LINE (352, 242)-(412, 259)
+LINE (130, 275)-(175, 251)
+LINE (175, 251)-(212, 271)
+LINE (55, 278)-(0, 250)
+LINE (0, 300)-(640, 300)
+colornumber = 65536 * CINT(30 * .7) + 256 * CINT(35 * .7) + CINT(45 * .7)'30,35,45
+PALETTE 7, colornumber
+
+COLOR 7
+PAINT (12, 272), , 8
+PAINT (102, 282), , 8
+PAINT (172, 272), , 8
+PAINT (242, 282), , 8
+PAINT (342, 262), , 8
+PAINT (452, 272), , 8
+PAINT (602, 272), , 8
+w = soldiers(defender) + 5 * knights(defender) + 13 * catapults(defender)
+w = w / 3
+d = 0
+j = 550
+n = 10
+z = 293
+c = 2
+t = 2
+DO
+j = j - (12 + c)
+n = n + 8
+g = j
+t = t + .2
+c = c + 1
+FOR B = 1 TO 20 + c
+time = time + 1
+g = g + (c / 1.7)
+x = g
+y = z + t * (c / 1.2)
+place = currentplayer
+currentplayer = defender
+CALL soldier(x!, y!, currentplayer!, q!, playerscastles!)
+currentplayer = place
+NEXT B
+IF time > w THEN EXIT DO
+LOOP
+colornumber = 65536 * 63 + 256 * 63 + 63'30,35,45
+PALETTE 0, colornumber
+
+number = 65536 * 1 + 256 * 1 + 1'30,35,45
+PALETTE 3, number
+
+
+COLOR 3
+LINE (2 * 8, 2 * 16)-STEP(40 * 8, 11 * 16), , BF
+COLOR 0
+FOR u = 1 TO 11
+l = l + 1
+LOCATE 1 + l, 2: PRINT "                                        "
+NEXT u
+        FOR n = 1 TO 2
+                IF n = 1 THEN
+                row = 3
+                column = 5
+                COLOR currentcolor(currentplayer, playerscastles)
+                person$ = "Attacker"
+                person = currentplayer
+                ELSE
+               
+                person$ = "Defender"
+                person = defender
+                row = 3
+                column = 22
+                place = currentplayer
+                currentplayer = defender
+                COLOR currentcolor(currentplayer, playerscastles)
+                currentplayer = place
+                END IF
+        LOCATE row, column: PRINT person$
+        LOCATE row + 1, column: PRINT names$(person)
+        LOCATE row + 3, column: PRINT "Soldiers"
+        LOCATE row + 3, column + 12: PRINT soldiers(person)
+        LOCATE row + 4, column: PRINT "Knights"
+        LOCATE row + 4, column + 12: PRINT knights(person)
+        LOCATE row + 5, column: PRINT "Catapults"
+        LOCATE row + 5, column + 12: PRINT catapults(person)
+        NEXT n
+        COLOR currentcolor(currentplayer, playerscastles)
+        LOCATE row + 7, 4: PRINT "Shall we: 1) Massacre (risky) 2)Melee "
+        LOCATE row + 8, 4: PRINT "3) Attack like sane men"
+DO
+choice$ = ""
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+
+IF VAL(choice$) < 4 AND VAL(choice$) > 0 THEN
+LOCATE row + 8, 38: PRINT choice$
+offense = VAL(choice$)
+END IF
+
+IF choice$ = CHR$(8) THEN
+offense = 0
+LOCATE row + 8, 38: PRINT " "
+END IF
+
+IF choice$ = CHR$(13) AND offense <> 0 THEN EXIT DO
+LOOP
+5
+place = currentplayer
+currentplayer = defender
+COLOR currentcolor(currentplayer, playerscastles)
+currentplayer = place
+        LOCATE row + 6, 4: PRINT "How shall we defend: 1) Counter-     "
+        LOCATE row + 7, 4: PRINT "Massacre 2) Viciously defend 3) Hold "
+        LOCATE row + 8, 4: PRINT "our ground 4) Cowardly Retreat /      "
+        LOCATE row + 9, 4: PRINT "Make a deal with the attacker"
+DO
+choice$ = ""
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+
+IF VAL(choice$) < 5 AND VAL(choice$) > 0 THEN
+LOCATE row + 8, 38: PRINT choice$
+defense = VAL(choice$)
+END IF
+IF notretreat = 1 AND defense = 4 THEN defense = 0
+IF choice$ = CHR$(8) THEN
+defense = 0
+LOCATE row + 8, 38: PRINT " "
+END IF
+
+IF choice$ = CHR$(13) AND defense <> 0 THEN EXIT DO
+LOOP
+LOCATE row + 6, 4: PRINT "                                     "
+LOCATE row + 7, 4: PRINT "                                     "
+LOCATE row + 8, 4: PRINT "                                     "
+IF defense = 4 AND notretreat = 0 THEN
+        LOCATE row + 6, 4: PRINT "1) Try to evade the enemy and retreat"
+        LOCATE row + 7, 4: PRINT "2) Try to negotiate into a  we give  "
+        LOCATE row + 8, 4: PRINT "you money you leave use alone deal   "
+        LOCATE row + 9, 4: PRINT "                                     "
+        LOCATE row + 7, 31: PRINT CHR$(34)
+        LOCATE row + 8, 38: PRINT CHR$(34)
+        DO
+        DO
+        choice$ = INKEY$
+        LOOP WHILE choice$ = ""
+SELECT CASE choice$
+CASE "1"
+        RANDOMIZE TIMER: what = CINT(RND * 100)
+        SELECT CASE what
+        CASE 0 TO 20   'escape unscathed
+                LOCATE row + 5, 4: PRINT "                                       "
+                LOCATE row + 6, 4: PRINT " You can't believe it!  You created an "
+                LOCATE row + 7, 4: PRINT " extremely intricate diversion and the "
+                LOCATE row + 8, 4: PRINT " enemy was dumfounded!                 "
+                LOCATE row + 9, 4: PRINT "          Successful Retreat!          "
+                LOCATE row + 10, 4: PRINT "                                       "
+                DO: LOOP WHILE INKEY$ = ""
+                EXIT SUB
+        CASE 21 TO 25  'the enemy was so astounded that some of his men joined your side
+                FOR u = 1 TO 11
+                LOCATE 1 + u, 2: PRINT "                                        "
+                NEXT u
+                LOCATE row + 1, 3:  PRINT "In an authoritative display of        "
+                LOCATE row + 2, 3:  PRINT "commanding presence you bellow out    "
+                LOCATE row + 3, 3:  PRINT "the pathetic injustices of your enemy "
+                LOCATE row + 4, 3:  PRINT "and his men begin to feel ashamed     "
+                LOCATE row + 5, 3:  PRINT "that they are fighting for him.  Some "
+                LOCATE row + 6, 3:  PRINT "of his men even walk proudly towards  "
+                LOCATE row + 7, 3:  PRINT "your battalions.                      "
+                takeaway = CINT(soldiers(currentplayer) * (what / 200))
+                soldiers(defender) = soldiers(defender) + takeaway
+                soldiers(currentplayer) = soldiers(currentplayer) - takeaway
+                DO: LOOP WHILE INKEY$ = ""
+                EXIT SUB
+        CASE 26 TO 35  'couldn't escape
+                LOCATE row + 6, 4: PRINT "Try as you might, escape is          "
+                LOCATE row + 7, 4: PRINT "impossible.  Your enemy has carefully"
+                LOCATE row + 8, 4: PRINT "laid out the attatck and nothing is  "
+                LOCATE row + 9, 4: PRINT "going to stop him.                   "
+                DO: LOOP WHILE INKEY$ = ""
+                notretreat = 1: GOTO 5
+        CASE 36 TO 100 'lost some men
+                LOCATE row + 6, 4: PRINT "You're happy to be alive, yet you    "
+                LOCATE row + 7, 4: PRINT "deeply regret that some of your      "
+                LOCATE row + 8, 4: PRINT "best men died in the valiant retreat."
+                LOCATE row + 9, 4: PRINT "The retreat was successful.          "
+                soldiers(defender) = CINT(soldiers(defender)) - CINT(soldiers(defender) * ((what / .6) / 330))
+                place = currentplayer: currentplayer = defender
+                COLOR currentcolor(currentplayer, playerscastles)
+                LOCATE row + 3, column: PRINT "Soldiers"
+                LOCATE row + 3, column + 12: PRINT soldiers(defender)
+                currentplayer = place
+                DO: LOOP WHILE INKEY$ = ""
+                EXIT SUB
+       END SELECT
+       
+CASE "2"
+10
+COLOR 4
+        FOR u = 1 TO 11
+        LOCATE 1 + u, 2: PRINT "                                        "
+        NEXT u
+        LOCATE 4, 4: PRINT names$(currentplayer);
+        LOCATE 4, 4 + LEN(names$(currentplayer)): PRINT "to call off the"
+        LOCATE 5, 4: PRINT "attack."
+        LOCATE 6, 4: PRINT "<  Defender offers less               "
+        LOCATE 7, 4: PRINT ">  Defender offers more               "
+        LOCATE 8, 4: PRINT "1. Defender offers at the amount above"
+        offer = 0: value = gold(defender) \ 2
+        DO
+        LOCATE 3, 4: PRINT names$(defender)
+        LOCATE 3, 4 + LEN(names$(defender)): PRINT "offers"; value; "gold for"
+                DO
+                        choice$ = INKEY$
+                        'GOTO 10
+                LOOP WHILE choice$ = ""
+                SELECT CASE choice$
+                CASE ","
+                        IF value > 1 THEN
+                        value = value - 1
+                        END IF
+                CASE "."
+                        IF value < gold(defender) THEN
+                        value = value + 1
+                        END IF
+                CASE "1"
+                LOCATE 6, 4: PRINT "                             "
+                LOCATE 7, 4: PRINT "                             "
+                LOCATE 8, 4: PRINT "                                      "
+                LOCATE 9, 4: PRINT "2. Attacker Accepts the offer"
+                LOCATE 10, 4: PRINT "3. Attacker Declines the offer"
+                LOCATE 11, 4: PRINT "4. Attacker wants war!        "
+                offer = 1
+                CASE "2"
+                IF offer = 1 THEN
+                gold(defender) = gold(defender) - value
+                gold(currentplayer) = gold(currentplayer) + value
+                LOCATE 9, 4: PRINT "                             "
+                LOCATE 10, 4: PRINT "                             "
+                LOCATE 7, 4: PRINT "The two men, enemies, are happy"
+                LOCATE 8, 4: PRINT "about what the other has done. "
+                LOCATE 9, 4: PRINT "They smile, shake hands, and   "
+                LOCATE 10, 4: PRINT "                                "
+                LOCATE 10, 4: PRINT names$(currentplayer)
+                LOCATE 10, 4 + LEN(names$(currentplayer)): PRINT "walks away"
+                LOCATE 11, 4: PRINT "with heavy bags of gold.      "
+                DO: LOOP WHILE INKEY$ = ""
+                EXIT SUB
+                END IF
+                CASE "3"
+                IF offer = 1 THEN
+                LOCATE 6, 4: PRINT "<  Defender offers less               "
+                LOCATE 7, 4: PRINT ">  Defender offers more               "
+                LOCATE 8, 4: PRINT "1. Defender offers at the amount above"
+                LOCATE 9, 4: PRINT "                                      "
+                LOCATE 10, 4: PRINT "                                      "
+                LOCATE 11, 4: PRINT "                                      "
+                offer = 0
+                END IF
+                CASE "4"
+                IF offer = 1 THEN
+                LOCATE 10, 4: PRINT "                                      "
+                LOCATE 11, 4: PRINT "                                      "
+                notretreat = 1: GOTO 5
+                END IF
+                END SELECT
+        LOOP
+CASE ELSE
+        BEEP
+END SELECT
+        LOOP
+END IF
+
+'**********| Selections have been made, Battle will begin |*******************
+
+DO
+alosses = 0
+closses = 0
+charge = 0
+cntrcharge = 0
+'****| Attack |*************
+FOR charge = 1 TO 4 - defense + 1
+alosses = 0
+alosses = alosses + soldiers(currentplayer) * (attackrisk(offense, skillevel, currentplayer) / 100)
+alosses = alosses + knights(currentplayer) * (attackrisk(offense, skillevel, currentplayer) / 15)
+alosses = alosses + catapults(currentplayer) * (attackrisk(offense, skillevel, currentplayer) / 6)
+attacklosses = attacklosses + (alosses / 50)
+NEXT charge
+'****| Counter - Attack |****
+FOR cntrcharge = 1 TO 4 - offense + 1
+closses = 0
+closses = closses + soldiers(defender) * (defrisk(defense, skillevel, currentplayer) / 60)
+closses = closses + knights(defender) * (defrisk(defense, skillevel, currentplayer) / 18)
+closses = closses + catapults(defender) * (defrisk(defense, skillevel, currentplayer) / 8)
+cntratcklosses = cntratcklosses + (closses / 50)
+NEXT cntrcharge
+
+'****| Men Removal |********
+attacklosses = CINT(attacklosses)
+cntratcklosses = CINT(cntratcklosses)
+soldiers(defender) = CINT(soldiers(defender))
+soldiers(currentplayer) = CINT(soldiers(currentplayer))
+knights(defender) = CINT(knights(defender))
+knights(currentplayer) = CINT(knights(currentplayer))
+catapults(defender) = CINT(catapults(defender))
+catapults(currentplayer) = CINT(catapults(currentplayer))
+morelosses = 0
+IF soldiers(defender) = 0 THEN
+morelosses = yes
+ELSE
+        IF soldiers(defender) - attacklosses < 0 THEN
+        morelosses = yes
+        attacklosses = attacklosses - soldiers(defender)
+        soldiers(defender) = 0
+        ELSE
+        soldiers(defender) = soldiers(defender) - attacklosses
+        attacklosses = 0
+        END IF
+END IF
+
+IF knights(defender) = 0 AND attacklosses > 0 THEN
+morelosses = yes
+ELSE
+        IF morelosses = yes THEN
+        knightsdead = knights(defender) - attacklosses
+                IF knightsdead < 1 THEN
+                knights(defender) = 0
+                morelosses = yes
+                howmany = ABS(knightsdead)
+                attacklosses = attacklosses - howmany
+                ELSE
+                morelosses = no
+                knights(defender) = knights(defender) - attacklosses
+                END IF
+        END IF
+END IF
+       
+IF morelosses = yes THEN
+catsdead = catapults(defender) - attacklosses
+IF catsdead > 0 THEN
+catapults(defender) = catapults(defender) - catsdead
+ELSE
+catapults(defender) = 0
+END IF
+END IF
+
+knightsdead = 0
+catsdead = 0
+soldiersdead = 0
+morelosses = 0
+'*****************| Removing attackers losses |******************************
+IF soldiers(currentplayer) = 0 THEN
+morelosses = yes
+ELSE
+        IF soldiers(currentplayer) - cntratcklosses < 0 THEN
+        morelosses = yes
+        cntratcklosses = cntratcklosses - soldiers(currentplayer)
+        soldiers(currentplayer) = 0
+        ELSE
+        soldiers(currentplayer) = soldiers(currentplayer) - cntratcklosses
+        cntratcklosses = 0
+        END IF
+END IF
+
+IF knights(currentplayer) = 0 AND cntratcklosses > 0 THEN
+morelosses = yes
+ELSE
+        IF morelosses = yes THEN
+        knightsdead = knights(currentplayer) - cntratcklosses
+                IF knightsdead < 1 THEN
+                knights(currentplayer) = 0
+                morelosses = yes
+                howmany = ABS(knightsdead)
+                cntratcklosses = cntratcklosses - howmany
+                ELSE
+                morelosses = no
+                knights(currentplayer) = knights(currentplayer) - cntratcklosses
+                END IF
+        END IF
+END IF
+     
+IF morelosses = yes THEN
+catsdead = catapults(currentplayer) - cntratcklosses
+IF catsdead > 0 THEN
+catapults(currentplayer) = catapults(currentplayer) - catsdead
+ELSE
+catapults(currentplayer) = 0
+END IF
+END IF
+       
+          LOCATE row + 9, 4: PRINT "                             "
+        FOR n = 1 TO 2
+                IF n = 1 THEN
+                row = 3
+                column = 5
+                COLOR currentcolor(currentplayer, playerscastles)
+                person$ = "Attacker"
+                person = currentplayer
+                ELSE
+              
+                person$ = "Defender"
+                person = defender
+                row = 3
+                column = 22
+                place = currentplayer
+                currentplayer = defender
+                COLOR currentcolor(currentplayer, playerscastles)
+                currentplayer = place
+                END IF
+        LOCATE row + 3, column + 12: PRINT "   "
+        LOCATE row + 4, column + 12: PRINT "   "
+        LOCATE row + 5, column + 12: PRINT "   "
+        LOCATE row, column: PRINT person$
+        LOCATE row + 1, column: PRINT names$(person)
+        LOCATE row + 3, column: PRINT "Soldiers"
+        LOCATE row + 3, column + 12: PRINT soldiers(person)
+        LOCATE row + 4, column: PRINT "Knights"
+        LOCATE row + 4, column + 12: PRINT knights(person)
+        LOCATE row + 5, column: PRINT "Catapults"
+        LOCATE row + 5, column + 12: PRINT catapults(person)
+        NEXT n
+IF soldiers(currentplayer) = 0 AND knights(currentplayer) = 0 AND catapults(currentplayer) = 0 THEN
+        xposarmy(currentplayer) = xposcastle(4, currentplayer)
+        yposarmy(currentplayer) = yposcastle(4, currentplayer)
+        x = xposarmy(currentplayer): y = yposarmy(currentplayer)
+        checkland = landposition(x / 20, y / 20)
+        IF checkland = 2 THEN
+        land(currentplayer) = land(currentplayer) + 1
+        landposition(x / 20, y / 20) = currentcolor(currentplayer, playerscastles)
+        ELSE
+        landposition(x / 20, y / 20) = currentcolor(currentplayer, playerscastles)
+        land(currentplayer) = land(currentplayer) + 1
+        placecurrentplayer = currentplayer
+                FOR i = 1 TO players
+                currentplayer = i
+                        IF currentcolor(currentplayer, playerscastles) = checkland THEN
+                        land(currentplayer) = land(currentplayer) - 1
+                        END IF
+                NEXT i
+        currentplayer = placecurrentplayer
+        END IF
+        EXIT DO
+END IF
+IF soldiers(defender) = 0 AND knights(defender) = 0 AND catapults(defender) = 0 THEN
+        FOR i = 4 TO 1 STEP -1
+        xposarmy(defender) = xposcastle(i, defender)
+        yposarmy(defender) = yposcastle(i, defender)
+        IF xposcastle(i, defender) <> 0 OR yposcastle(i, defender) <> 0 THEN EXIT FOR
+        NEXT i
+       
+        x = xposarmy(defender): y = yposarmy(defender)
+        checkland = landposition(x / 20, y / 20)
+        IF checkland = 2 THEN
+        land(defender) = land(defender) + 1
+        place = currentplayer: currentplayer = defender
+        landposition(x / 20, y / 20) = currentcolor(currentplayer, playerscastles)
+        currentplayer = place
+        ELSE
+        place = currentplayer: currentplayer = defender
+        landposition(x / 20, y / 20) = currentcolor(currentplayer, playerscastles)
+        currentplayer = place
+        land(defender) = land(defender) + 1
+        placecurrentplayer = currentplayer
+                FOR i = 1 TO players
+                currentplayer = i
+                        IF currentcolor(currentplayer, playerscastles) = checkland THEN
+                        land(currentplayer) = land(currentplayer) - 1
+                        END IF
+                NEXT i
+        currentplayer = placecurrentplayer
+        END IF
+        EXIT DO
+END IF
+LOOP
+a& = TIMER
+DO
+B& = TIMER: IF B& - a& > 1 THEN EXIT DO
+LOOP WHILE INKEY$ = ""
+END SUB
+
+
+SUB Jamieland
+
+END SUB
+
+SUB Kimland (c)
+skipit = c
+CLS
+SCREEN 12: c = 2
+colornumber = 65536 * 30 + 256 * 30 + 30
+blue = CINT(17 * .95)    '17
+red = CINT(36 * .95)     '36
+green = CINT(50 * .95)   '50
+colornumber = 65536 * blue + 256 * green + red
+PALETTE c, colornumber
+DO
+COLOR 1
+SELECT CASE y
+        CASE 0
+        CASE 20
+        IF x > 100 AND x < 180 THEN COLOR c
+        IF x > 240 AND x < 300 THEN COLOR c
+        IF x > 400 AND x < 480 THEN COLOR c
+        IF x > 520 AND x < 600 THEN COLOR c
+        CASE 40
+        IF x > 80 AND x < 180 THEN COLOR c
+        IF x > 200 AND x < 340 THEN COLOR c
+        IF x > 360 AND x < 500 THEN COLOR c
+        IF x > 500 AND x < 620 THEN COLOR c
+        CASE 60
+        IF x > 60 AND x < 160 THEN COLOR c
+        IF x > 180 AND x < 500 THEN COLOR c
+        IF x > 500 AND x < 620 THEN COLOR c
+        CASE 80
+        IF x > 40 AND x < 160 THEN COLOR c
+        IF x > 160 AND x < 500 THEN COLOR c
+        IF x > 520 AND x < 620 THEN COLOR c
+        CASE 100
+        IF x > 40 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 500 THEN COLOR c
+        IF x > 520 AND x < 600 THEN COLOR c
+        CASE 120
+        IF x > 40 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 520 THEN COLOR c
+        IF x > 520 AND x < 600 THEN COLOR c
+        CASE 140
+        IF x > 40 AND x < 480 THEN COLOR c
+        IF x > 520 AND x < 580 THEN COLOR c
+        CASE 160
+        IF x > 60 AND x < 260 THEN COLOR c
+        IF x > 260 AND x < 420 THEN COLOR c
+        IF x > 480 AND x < 600 THEN COLOR c
+        CASE 180
+        IF x > 60 AND x < 240 THEN COLOR c
+        IF x > 280 AND x < 400 THEN COLOR c
+        IF x > 420 AND x < 620 THEN COLOR c
+        CASE 200
+        IF x > 0 AND x < 40 THEN COLOR c
+        IF x > 80 AND x < 220 THEN COLOR c
+        IF x > 280 AND x < 360 THEN COLOR c
+        IF x > 400 AND x < 620 THEN COLOR c
+        CASE 220
+        IF x > 0 AND x < 60 THEN COLOR c
+        IF x > 120 AND x < 220 THEN COLOR c
+        IF x > 220 AND x < 340 THEN COLOR c
+        IF x > 380 AND x < 620 THEN COLOR c
+        CASE 240
+        IF x > 20 AND x < 120 THEN COLOR c
+        IF x > 160 AND x < 340 THEN COLOR c
+        IF x > 360 AND x < 540 THEN COLOR c
+        IF x > 560 AND x < 600 THEN COLOR c
+        CASE 260
+        IF x > 20 AND x < 160 THEN COLOR c
+        IF x > 180 AND x < 320 THEN COLOR c
+        IF x > 380 AND x < 560 THEN COLOR c
+        CASE 280
+        IF x > 0 AND x < 340 THEN COLOR c
+        IF x > 400 AND x < 580 THEN COLOR c
+        CASE 300
+        IF x > 0 AND x < 360 THEN COLOR c
+        IF x > 380 AND x < 580 THEN COLOR c
+        CASE 320
+        IF x > 0 AND x < 580 THEN COLOR c
+        CASE 340
+        IF x > 20 AND x < 600 THEN COLOR c
+        CASE 360
+        IF x > 40 AND x < 600 THEN COLOR c
+        CASE 380
+        IF x > 60 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 200 THEN COLOR c
+        IF x > 220 AND x < 620 THEN COLOR c
+        CASE 400
+        IF x > 60 AND x < 120 THEN COLOR c
+        IF x > 240 AND x < 620 THEN COLOR c
+        CASE 420
+        IF x = 0 THEN COLOR c
+        IF x > 40 AND x < 120 THEN COLOR c
+        IF x > 240 AND x < 600 THEN COLOR c
+        CASE 440
+        IF x = 0 THEN COLOR c
+        IF x > 20 AND x < 140 THEN COLOR c
+        IF x > 220 AND x < 560 THEN COLOR c
+        CASE 460
+        IF x < 160 THEN COLOR c
+        IF x > 200 AND x < 540 THEN COLOR c
+END SELECT
+d = 3 - c:
+LINE (x, y)-(x + (17 + d), y + (17 + d)), , BF
+x = x + 20
+IF x = 640 THEN
+y = 20 + y
+x = 0
+END IF
+LOOP WHILE y < 480
+'*************|MOUNTAIN SECTION|*********
+x1 = 390: y1 = 450
+x1 = x1 - 11:  y1 = y1 - 11
+x = x1: y = y1
+FOR a = 1 TO 8
+COLOR 6
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = 20 + x
+y = y - 20
+IF a = 4 THEN x = 20 + x1
+IF a = 4 THEN y = y1
+NEXT a
+
+x1 = 379: y1 = 259
+x = x1: y = y1
+FOR a = 1 TO 4
+COLOR 6
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = 20 + x
+y = y + 20
+IF a = 2 THEN x = 20 + x1
+IF a = 2 THEN y = y1
+NEXT a
+
+x1 = 419: y1 = 279
+x = x1: y = y1                        'These instructions
+FOR a = 1 TO 6                        'will draw diagonal
+COLOR 6                               'mountains.
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = 20 + x
+y = y + 20
+IF a = 3 THEN x = 20 + x1
+IF a = 3 THEN y = y1
+NEXT a
+
+x1 = 459: y1 = 339
+x = x1: y = y1
+FOR a = 1 TO 2                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+'(339,99),(319,139),(339,179)
+x1 = 339: y1 = 99
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+x1 = 319: y1 = 139
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+
+x1 = 319: y1 = 139
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+x1 = 339: y1 = 179
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+
+x1 = 319: y1 = 219
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+'299,399
+x1 = 299: y1 = 239
+x = x1: y = y1
+FOR a = 1 TO 2                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+x1 = 279: y1 = 239
+x = x1: y = y1
+FOR a = 1 TO 4
+COLOR 6
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = x - 20
+y = y + 20
+IF a = 2 THEN x = x1 - 20
+IF a = 2 THEN y = y1
+NEXT a
+
+x1 = 239: y1 = 279
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+x1 = 219: y1 = 319
+x = x1: y = y1
+FOR a = 1 TO 2                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+x = 259: y = 279                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+
+x1 = 219: y1 = 159
+x = x1: y = y1
+FOR a = 1 TO 4
+COLOR 6
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = x - 20
+y = y + 20
+IF a = 2 THEN x = x1 - 20
+IF a = 2 THEN y = y1
+NEXT a
+
+x1 = 159: y1 = 179
+x = x1: y = y1
+FOR a = 1 TO 3                         'Vertical mountains
+COLOR 6                                '
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+y = y + 20
+NEXT a
+
+x1 = 99: y1 = 179
+x = x1: y = y1
+FOR a = 1 TO 4
+COLOR 6
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = x + 20
+y = y + 20
+IF a = 2 THEN x = x1 + 20
+IF a = 2 THEN y = y1
+NEXT a
+
+x1 = 79: y1 = 119
+x = x1: y = y1
+FOR a = 1 TO 4
+COLOR 6
+LINE (x + 1, y - 1)-(x + 10, y - 19)
+LINE (x + 10, y - 19)-(x + 19, y - 1)
+LINE (x + 19, y - 1)-(x + 1, y - 1)
+PAINT (x + 9, y - 5)
+x = x + 20
+y = y + 20
+IF a = 2 THEN x = x1
+IF a = 2 THEN y = y1 + 20
+NEXT a
+'********|BRIDGE SECTION|***********   
+        x = 159: y = 99: CALL drawhorobridge(x, y)
+        x = 99: y = 239: CALL drawvertbridge(x, y)
+        x = 459: y = 179: CALL drawvertbridge(x, y)
+IF skipit <> 100 THEN
+
+FOR c = 1 TO 5
+SELECT CASE c
+ CASE 1
+ x = 120
+ y = 80
+ q = 9
+ CASE 2
+ x = 80
+ y = 460
+ q = 4
+ CASE 3
+ x = 360
+ y = 360
+ q = 10
+ CASE 4
+ x = 560
+ y = 400
+ q = 14
+ CASE 5
+ x = 460
+ y = 100
+ colornumber = 65536 * 40 + 256 * 20 + 40
+ PALETTE 13, colornumber
+ q = 13
+ END SELECT
+ CALL castle(x, y, q)
+NEXT c
+END IF
+END SUB
+
+SUB largewindow (x, y)                '
+COLOR 8                               '     x     x + 6
+LINE (x, y)-(x, y + 10)               '     |     |
+LINE (x + 6, y)-(x + 6, y + 10)       '     |     |
+LINE (x, y)-(x + 2, y - 2)            'y-2-> ±±± 
+LINE (x + 6, y)-(x + 4, y - 2)        '      ± ± ±
+LINE (x, y + 10)-(x + 6, y + 10)      'y--> ±  ±  ±
+LINE (x + 3, y - 2)-(x + 3, y + 10)   '     ±  ±  ±
+LINE (x, y + 2)-(x + 6, y + 2)        'y+2  ±±±±±±±
+LINE (x, y + 6)-(x + 6, y + 6)        '     ±  ±  ±
+COLOR 1                               '     ±  ±  ±
+PAINT (x + 1, y), , 8                 '     ±  ±  ±
+PAINT (x + 4, y), , 8                 'y+6  ±±±±±±±
+PAINT (x + 1, y + 4), , 8             '     ±  ±  ±
+PAINT (x + 4, y + 4), , 8             '     ±  ±  ±
+PAINT (x + 1, y + 8), , 8             '     ±  ±  ±
+PAINT (x + 4, y + 8), , 8             'y+10>±±±±±±±
+END SUB
+
+SUB loadgame (skillevel, movement, names$, players, soldiers, knights, catapults, gold, xposarmy, yposarmy, land, playerscastles, numofcastles, homearmy, xposcastle, yposcastle, currentplayer, landposition)
+DIM games$(9)
+PALETTE
+CLS
+colornumber = 65536 * 1 + 256 * 1 + 1'30,35,45
+PALETTE 15, colornumber
+FOR i = 1 TO 9
+   diskfile$ = "game" + CHR$(48 + i) + ".sve"
+   OPEN diskfile$ FOR RANDOM AS #1
+   CLOSE #1
+NEXT i
+
+CLS
+COLOR 15
+VIEW PRINT 7 TO 17
+FILES "*.SVE"
+
+'LOCATE 10, 1: PRINT "12345678901234567890123456789012345678901234567890123456789"
+'LOCATE 11, 1: PRINT "         1         2         3         4         5"
+
+FOR i = 1 TO 3
+FOR h = 1 TO 72 STEP 18
+
+        m = m + 1
+        FOR j = 1 TO 12
+             
+                CHECK = SCREEN(CSRLIN - 5 + i, h + j - 1)
+                IF CHECK <> 32 THEN
+                games$(m) = games$(m) + CHR$(CHECK)
+                END IF
+        NEXT j
+       
+NEXT h
+NEXT i
+
+CLS
+SCREEN 13
+column = 4
+colornumber = 65536 * 63 + 256 * 63 + 63'30,35,45
+PALETTE 0, colornumber
+colornumber = 65536 * 1 + 256 * 1 + 1'30,35,45
+PALETTE 15, colornumber
+COLOR 8
+LINE (0, 0)-(320, 200), , BF
+COLOR 0
+LINE (4 * 8, 5.5 * 8)-(35.5 * 8, 19.5 * 5), , BF
+COLOR 15
+COLOR 15
+             '   |         5    1    5    2    5    3    5    |
+LOCATE 5, column:  PRINT "ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»"'  5
+LOCATE 6, column:  PRINT "º ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄ¿         º"'
+LOCATE 7, column:  PRINT "º ³                 ³ ³         º"'
+LOCATE 8, column:  PRINT "º ³                 ÃÄ´ÚÄÄÄÄÄÄ¿ º"'
+LOCATE 9, column:  PRINT "º ³                 ³ ³³ LOAD ³ º"'
+LOCATE 10, column: PRINT "º ³                 ³ ³ÀÄÄÄÄÄÄÙ º"' 1
+LOCATE 11, column: PRINT "º ³                 ³ ³         º"'
+LOCATE 12, column: PRINT "º ³                 ³ ³ÚÄÄÄÄÄÄ¿ º"'
+LOCATE 13, column: PRINT "º ³                 ³ ³³DELETE³ º"'
+LOCATE 14, column: PRINT "º ³                 ³ ³ÀÄÄÄÄÄÄÙ º"'
+LOCATE 15, column: PRINT "º ³                 ³ ³         º"'  5
+LOCATE 16, column: PRINT "º ³                 ÃÄ´ÚÄÄÄÄÄÄ¿ º"'
+LOCATE 17, column: PRINT "º ³                 ³ ³³CANCEL³ º"'
+LOCATE 18, column: PRINT "º ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÙÀÄÄÄÄÄÄÙ º"'
+LOCATE 19, column: PRINT "º                               º"'
+LOCATE 20, column: PRINT "ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼"' 2
+COLOR 8
+LINE (23, 32)-(26, 170), , BF
+LINE (27, 25)-(300, 33), , BF        ' 
+LINE (286, 25)-(310, 180), , BF      ' 
+LINE (25, 157)-(300, 160), , BF
+COLOR 4
+LINE (45, 47)-(23 * 8, 55), , B
+DIM title$(9)
+FOR i = 1 TO 9
+        diskfile$ = "game" + CHR$(48 + i) + ".sve"
+        OPEN diskfile$ FOR INPUT AS #i
+        IF LOF(i) > 100 THEN
+                q = q + 1
+                INPUT #i, title$
+                LOCATE 6 + i, 7: PRINT title$
+                title$(i) = title$
+        END IF
+        CLOSE #i
+        LENGTH = 12
+NEXT i
+row = 1: column = 7: side = 1: fun = 1
+DO
+diskfile$ = "game" + CHR$(48 + row) + ".sve"
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+choice$ = RIGHT$(choice$, 1)
+
+
+SELECT CASE choice$
+CASE CHR$(left)
+        IF side = 2 AND editname = 0 THEN
+        side = 1
+        COLOR 15
+        SELECT CASE fun
+        CASE 1
+                LOCATE 8, column + 20:  PRINT "ÚÄÄÄÄÄÄ¿"
+                LOCATE 9, column + 20:  PRINT "³ LOAD ³"
+                LOCATE 10, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"
+        CASE 2
+                LOCATE 12, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 13, column + 20: PRINT "³DELETE³"'
+                LOCATE 14, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+     
+        CASE 3
+                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 17, column + 20: PRINT "³CANCEL³"'
+                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+     
+        END SELECT
+        END IF
+CASE CHR$(right)
+        IF side = 1 AND editname = 0 THEN
+        side = 2
+        COLOR 4
+        SELECT CASE fun
+        CASE 1
+                LOCATE 8, column + 20:  PRINT "ÚÄÄÄÄÄÄ¿"
+                LOCATE 9, column + 20:  PRINT "³ LOAD ³"
+                LOCATE 10, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"
+        CASE 2
+                LOCATE 12, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 13, column + 20: PRINT "³DELETE³"'
+                LOCATE 14, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+      
+        CASE 3
+                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 17, column + 20: PRINT "³CANCEL³"'
+                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+        END SELECT
+        END IF
+CASE CHR$(up)
+        IF side = 1 THEN
+                IF row = 1 THEN
+                        BEEP
+                ELSE
+                   COLOR 0
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   row = row - 1
+                   COLOR 4
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   END IF
+        ELSE
+                IF fun > 1 THEN
+                        fun = fun - 1
+                       
+                        FOR i = 1 TO 2
+                                IF i = 1 THEN
+                                COLOR 4
+                                ELSE
+                                COLOR 15
+                                END IF
+                                SELECT CASE fun + i - 1
+                                        CASE 1
+                                                LOCATE 8, column + 20:  PRINT "ÚÄÄÄÄÄÄ¿"
+                                                LOCATE 9, column + 20:  PRINT "³ LOAD ³"
+                                                LOCATE 10, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"
+                                        CASE 2
+                                                LOCATE 12, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 13, column + 20: PRINT "³DELETE³"'
+                                                LOCATE 14, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                     
+                                        CASE 3
+                                                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 17, column + 20: PRINT "³CANCEL³"'
+                                                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                END SELECT
+                        NEXT i
+                ELSE
+                        BEEP
+                END IF
+        END IF
+CASE CHR$(down)
+        IF side = 1 THEN
+                IF row = 9 THEN
+                        BEEP
+                ELSE
+                   COLOR 0
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   row = row + 1
+                   COLOR 4
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   END IF
+                  
+        ELSE
+                IF fun < 3 THEN
+                        fun = fun + 1
+                      
+                        FOR i = 1 TO 2
+                                IF i = 1 THEN
+                                COLOR 15
+                                ELSE
+                                COLOR 4
+                                END IF
+                                SELECT CASE fun + i - 2
+                                        CASE 1
+                                                LOCATE 8, column + 20:  PRINT "ÚÄÄÄÄÄÄ¿"
+                                                LOCATE 9, column + 20:  PRINT "³ LOAD ³"
+                                                LOCATE 10, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"
+                                        CASE 2
+                                                LOCATE 12, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 13, column + 20: PRINT "³DELETE³"'
+                                                LOCATE 14, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                    
+                                        CASE 3
+                                                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 17, column + 20: PRINT "³CANCEL³"'
+                                                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                END SELECT
+                        NEXT i
+                ELSE
+                        BEEP
+                END IF
+        END IF
+
+
+CASE CHR$(enter)
+        SELECT CASE side
+        CASE 2
+                SELECT CASE fun
+                CASE 1 'load
+                        IF title$(row) <> "" THEN
+                        LOCATE 19, 6: PRINT " Loading .... "
+                        diskfile$ = "game" + CHR$(48 + row) + ".sve"
+                        OPEN diskfile$ FOR INPUT AS #1
+                      
+                        INPUT #1, title$(row), players, currentplayer
+                      
+                        FOR i = 1 TO 32
+                        FOR j = 1 TO 24
+                        INPUT #1, landposition(i, j)
+                        NEXT j
+                        NEXT i
+                      
+                        FOR i = 1 TO players
+                        INPUT #1, names$(i), soldiers(i), knights(i), catapults(i), gold(i), xposarmy(i), yposarmy(i), land(i), playerscastles(i), numofcastles(i), skillevel(i), movement(i)
+                       
+                      
+                        FOR j = 1 TO 4
+                        INPUT #1, xposcastle(j, i), yposcastle(j, i)
+                        INPUT #1, homearmy(j, i)
+                        NEXT j
+                        NEXT i
+                      
+                      
+                        CLOSE #1
+                        LOCATE 19, 6: PRINT "               "
+                        EXIT SUB
+                        END IF
+                CASE 2 'delete
+                        diskfile$ = "game" + CHR$(48 + row) + ".sve"
+                        COLOR 0
+                        LINE (56, row * 8 + 40)-(56 + 126, row * 8 + 49), , BF
+                        COLOR 4
+                        LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                        KILL diskfile$
+                        OPEN diskfile$ FOR RANDOM AS #2
+                        CLOSE #2
+                CASE 3 'cancel
+                        COLOR 4
+                        LOCATE 19, 6: PRINT "Are you sure?(Y/N)"
+                        DO
+                        DO
+                        choice$ = INKEY$
+                        LOOP WHILE choice$ = ""
+                        choice$ = UCASE$(choice$)
+                        SELECT CASE choice$
+                        CASE "Y"
+                                CLS
+                                EXIT SUB
+                        CASE "N"
+                                LOCATE 19, 6: PRINT "                  "
+                                EXIT DO
+                        CASE ELSE
+                                BEEP
+                        END SELECT
+                        LOOP
+              
+                END SELECT
+        END SELECT
+END SELECT
+
+
+LOOP
+END SUB
+
+SUB lookatmap (homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+SCREEN 12
+CLS
+PALETTE
+c = 100
+placeholderpause = pause
+
+SELECT CASE scenario
+CASE 1: CALL Markland(x, y, c, players)
+CASE 2: CALL Kimland(c)
+CASE 3
+CASE 4
+CASE 5
+CASE 6
+END SELECT
+place = currentplayer
+FOR a = 1 TO players
+currentplayer = a
+x = xposcastle(4, a)
+y = yposcastle(4, a)
+q = currentcolor(currentplayer, playerscastles)
+IF x <> 0 AND y <> 0 THEN CALL castle(x, y, q)
+NEXT a
+currentplayer = place
+placecurrentplayer = currentplayer
+  FOR castles = 1 TO 3
+  FOR t = 1 TO players
+  x = xposcastle(castles, t)
+  y = yposcastle(castles, t)
+  
+  currentplayer = t
+  q = currentcolor(currentplayer!, playerscastles)
+ 
+  IF xposcastle(castles, t) <> 0 OR yposcastle(castles, t) <> 0 THEN
+  CALL castle(x, y, q)
+  END IF
+ 
+  NEXT t
+  NEXT castles
+  IF pause <> 5893 THEN
+  currentplayer = placecurrentplayer
+  FOR squares = 0 TO 24
+  FOR acrosquares = 0 TO 32
+  paintcolor = landposition(acrosquares, squares)
+          IF paintcolor <> 0 THEN
+          COLOR 0
+          LINE (acrosquares * 20 - 1, squares * 20 - 1)-STEP(20, 20), , B
+          COLOR paintcolor
+          LINE (acrosquares * 20 + 10, squares * 20 + 10)-STEP(0, 0)
+          PAINT (acrosquares * 20 + 10, squares * 20 + 10), , 0
+          END IF
+  NEXT acrosquares
+  acrosquares = 1
+  NEXT squares
+  placecurrentplayer = currentplayer
+  END IF
+          FOR m = 1 TO players
+          currentplayer = m
+          x = xposarmy(currentplayer)
+          y = yposarmy(currentplayer)
+          q = currentcolor(currentplayer, playerscastles)
+          CALL soldier(x, y, currentplayer, q, playerscastles)
+          NEXT m
+  currentplayer = placecurrentplayer
+  pause = placeholderpause
+  IF pause <> 1 AND pause <> 5893 THEN
+  a& = TIMER
+  DO
+  B& = TIMER
+  IF B& - a& > 1.5 THEN EXIT DO
+  LOOP WHILE INKEY$ = ""
+  CALL statusreport(movement, xposcastle, yposcastle, gold, land, homearmy, soldiers, knights, catapults, names$, xposarmy, players)
+  WIDTH 80, 30
+  END IF
+END SUB
+
+SUB Markland (x, y, c, players)
+skipit = c
+CLS
+SCREEN 12: c = 2
+colornumber = 65536 * 30 + 256 * 30 + 30
+blue = CINT(17 * .95)    '17
+red = CINT(36 * .95)     '36
+green = CINT(50 * .95)   '50
+colornumber = 65536 * blue + 256 * green + red
+PALETTE c, colornumber
+DO
+SELECT CASE y
+        CASE 0
+        COLOR 1
+        CASE 20
+        IF x < 320 OR x > 460 THEN COLOR 1
+        IF x > 320 AND x < 480 THEN COLOR c
+        CASE 40
+        COLOR 1
+        IF x > 60 AND x < 180 THEN COLOR c
+        IF x > 240 AND x < 500 THEN COLOR c
+        CASE 60
+        COLOR 1
+        IF x > 40 AND x < 540 THEN COLOR c
+        CASE 80
+        COLOR 1
+        IF x > 20 AND x < 560 THEN COLOR c
+        CASE 100
+        COLOR 1
+        IF x > 20 AND x < 560 THEN COLOR c
+        CASE 120
+        COLOR 1
+        IF x > 40 AND x < 560 THEN COLOR c
+        CASE 140
+        COLOR 1
+        IF x > 40 AND x < 360 THEN COLOR c
+        IF x > 420 AND x < 560 THEN COLOR c
+        CASE 160
+        COLOR 1
+        IF x > 20 AND x < 340 THEN COLOR c
+        IF x > 440 AND x < 560 THEN COLOR c
+        CASE 180
+        COLOR 1
+        IF x > 1 AND x < 160 THEN COLOR c
+        IF x > 220 AND x < 320 THEN COLOR c
+        IF x > 360 AND x < 420 THEN COLOR c
+        IF x > 440 AND x < 560 THEN COLOR c
+        CASE 200
+        COLOR 1
+        IF x > 20 AND x < 140 THEN COLOR c
+        IF x > 160 AND x < 220 THEN COLOR c
+        IF x > 340 AND x < 440 THEN COLOR c
+        IF x > 440 AND x < 560 THEN COLOR c
+        CASE 220
+        COLOR 1
+        IF x > 40 AND x < 120 THEN COLOR c
+        IF x > 140 AND x < 240 THEN COLOR c
+        IF x > 280 AND x < 340 THEN COLOR c
+        IF x > 360 AND x < 420 THEN COLOR c
+        IF x > 440 AND x < 560 THEN COLOR c
+        CASE 240
+        COLOR 1
+        IF x > 120 AND x < 260 THEN COLOR c
+        IF x > 280 AND x < 360 THEN COLOR c
+        IF x > 440 AND x < 580 THEN COLOR c
+        CASE 260
+        COLOR 1
+        IF x > 80 AND x < 280 THEN COLOR c
+        IF x > 280 AND x < 400 THEN COLOR c
+        IF x > 420 AND x < 580 THEN COLOR c
+        CASE 280
+        COLOR 1
+        IF x > 40 AND x < 280 THEN COLOR c
+        IF x > 280 AND x < 600 THEN COLOR c
+        CASE 300
+        COLOR 1
+        IF x > 60 AND x < 280 THEN COLOR c
+        IF x > 300 AND x < 620 THEN COLOR c
+        CASE 320
+        COLOR 1
+        IF x > 60 AND x < 300 THEN COLOR c
+        IF x > 300 AND x < 620 THEN COLOR c
+        CASE 340
+        COLOR 1
+        IF x > 60 AND x < 300 THEN COLOR c
+        IF x > 300 AND x < 620 THEN COLOR c
+        CASE 360
+        COLOR 1
+        IF x > 60 AND x < 300 THEN COLOR c
+        IF x > 320 AND x < 420 THEN COLOR c
+        IF x > 440 AND x < 620 THEN COLOR c
+        CASE 380
+        COLOR 1
+        IF x > 80 AND x < 140 THEN COLOR c
+        IF x > 180 AND x < 300 THEN COLOR c
+        IF x > 460 AND x < 620 THEN COLOR c
+        CASE 400
+        COLOR 1
+        IF x > 460 AND x < 620 THEN COLOR c
+        CASE 420
+        COLOR 1
+        IF x > 440 AND x < 620 THEN COLOR c
+        CASE 440
+        COLOR 1
+        IF x > 520 AND x < 600 THEN COLOR c
+        CASE 460
+        COLOR 1
+END SELECT
+d = 3 - c:
+LINE (x, y)-(x + (17 + d), y + (17 + d)), , BF
+x = x + 20
+IF x = 640 THEN
+y = 20 + y
+x = 0
+END IF
+LOOP WHILE y < 480
+
+'CIRCLE (450, 340), 100, , .1, 1.46, 1.6   '   1.2
+'CIRCLE (450, 340), 99, , .1, 1.46, 1.6    ' 1.2
+'CIRCLE (450, 340), 98, , .1, 1.46, 1.6
+'CIRCLE (460, 260), 15, , 1, 1.67
+'*************|MOUNTAIN SECTION|*********
+x = 463: y = 375
+FOR a = 1 TO 6
+COLOR 6
+LINE (x, y)-(x + 9, y - 18)
+LINE (x + 9, y - 18)-(x + 18, y)
+LINE (x + 18, y)-(x, y)
+PAINT (x + 9, y - 5)
+x = 20 + x
+y = y - 20
+IF a = 3 THEN x = 479
+IF a = 3 THEN y = 375
+NEXT a
+
+x = 420: y = 135
+m = x: n = y
+FOR a = 1 TO 6
+COLOR 6
+LINE (x, y)-(x + 9, y - 18)
+LINE (x + 9, y - 18)-(x + 18, y)
+LINE (x + 18, y)-(x, y)
+PAINT (x + 9, y - 5)
+x = 20 + x
+y = y - 20
+IF a = 3 THEN x = 16 + m
+IF a = 3 THEN y = n
+NEXT a
+
+x = 220: y = 115
+m = x: n = y
+        FOR a = 1 TO 9
+        COLOR 6
+        LINE (x, y)-(x + 9, y - 18)
+        LINE (x + 9, y - 18)-(x + 18, y)
+        LINE (x + 18, y)-(x, y)
+        PAINT (x + 9, y - 5)
+        x = x - 20
+        y = y - 20
+        IF a = 3 THEN x = 16 + m
+        IF a = 3 THEN y = n
+        IF a = 6 THEN x = 220
+        IF a = 6 THEN y = 115
+        IF a = 6 THEN
+        IF a = 6 THEN EXIT FOR
+        END IF
+        NEXT a
+                FOR a = 1 TO 3
+                 y = y + 20
+                IF a > 1 THEN x = 240
+                IF a = 2 THEN y = y - 20
+                LINE (x, y)-(x + 9, y - 18)
+                LINE (x + 9, y - 18)-(x + 18, y)
+                LINE (x + 18, y)-(x, y)
+                PAINT (x + 9, y - 5)
+                IF a = 3 THEN EXIT FOR
+                NEXT a
+
+colornumber = 65536 * 30 + 256 * 30 + 30
+PALETTE 7, colornumber
+COLOR 7
+'********|BRIDGE SECTION|***********     
+       
+        FOR a = 3 TO 15
+        z = 21 - a
+        CIRCLE (450, 238 - z), 20, , 1.1, 2.2
+        NEXT a
+       
+        FOR a = 3 TO 15
+        z = 21 - a
+        CIRCLE (310, 358 - z), 20, , 1.1, 2.2
+        NEXT a
+       
+        FOR a = 2 TO 15
+        LINE (380 + a, 240)-(380 + a, 258)
+        NEXT a
+        LINE (381, 244)-(381, 254): LINE (396, 244)-(396, 254)
+       
+        FOR a = 2 TO 15
+        LINE (180 + a, 180)-(180 + a, 198)
+        NEXT a
+        LINE (181, 184)-(181, 194): LINE (196, 184)-(196, 194)
+       
+        FOR a = 2 TO 15
+        LINE (300 + a, 200)-(300 + a, 218)
+        NEXT a
+        LINE (301, 204)-(301, 214): LINE (316, 204)-(316, 214)
+'****************|CASTLE SECTION|********************
+IF skipit <> 100 THEN
+
+FOR c = 1 TO 5
+SELECT CASE c
+ CASE 1
+ x = 183
+ y = 337
+ a = x - 10
+ q = 9
+ CASE 2
+ x = 523
+ y = 377
+ a = x - 10
+ q = 4
+ CASE 3
+ x = 403
+ y = 217
+ a = x - 10
+ q = 10
+ CASE 4
+  x = 343
+  y = 97
+  a = x - 10
+  q = 14
+  CASE 5
+  x = 123
+  y = 117
+  a = x - 10
+  colornumber = 65536 * 40 + 256 * 20 + 40
+  PALETTE 13, colornumber
+  q = 13
+  END SELECT
+COLOR 15
+LINE (x, y)-(x + 12, y - 11), , BF
+LINE (x, y - 9)-(x + 2, y - 14), , BF
+LINE (x + 12, y - 9)-(x + 10, y - 14), , BF
+COLOR 8
+LINE (x + 13, y - 14)-(x + 11, y - 19)
+LINE (x + 11, y - 19)-(x + 9, y - 14)
+LINE (x + 9, y - 14)-(x + 13, y - 14)
+PAINT (x + 11, y - 16)
+LINE (a + 13, y - 14)-(a + 11, y - 19)
+LINE (a + 11, y - 19)-(a + 9, y - 14)
+LINE (a + 9, y - 14)-(a + 13, y - 14)
+PAINT (a + 11, y - 16)
+colornumber = 65536 * 45 + 256 * 45 + 45
+PALETTE 5, colornumber
+COLOR 5
+LINE (x + 2, y)-(x + 2, y - 9)
+LINE (x + 10, y)-(x + 10, y - 9)
+COLOR 8
+x = x - 10: y = y + 6
+LINE (x + 13, y - 14)-(x + 11, y - 19)
+LINE (x + 11, y - 19)-(x + 9, y - 14)
+LINE (x + 9, y - 14)-(x + 13, y - 14)
+PAINT (x + 11, y - 16)
+x = x + 10
+LINE (x + 13, y - 14)-(x + 11, y - 19)
+LINE (x + 11, y - 19)-(x + 9, y - 14)
+LINE (x + 9, y - 14)-(x + 13, y - 14)
+PAINT (x + 11, y - 16)
+COLOR 0
+CIRCLE (x + 6, y - 10), 2
+PAINT (x + 6, y - 10)
+LINE (x + 4, y - 6)-(x + 8, y - 9), , BF
+LINE (x + 6, y - 18)-(x + 6, y - 25)
+COLOR q
+LINE (x + 6, y - 22)-(x + 11, y - 25)
+LINE (x + 11, y - 25)-(x + 6, y - 28)
+LINE (x + 6, y - 28)-(x + 6, y - 22)
+PAINT (x + 8, y - 25)
+NEXT c
+END IF
+
+END SUB
+
+SUB moraltour (currentplayer, land, soldiers)
+CLS
+colornumber = 65536 * 35 + 256 * 35 + 35
+PALETTE 0, colornumber
+SCREEN 12 '640 * 350 -80 x 25 or 80 x 43 text format, 8 x 14 or 8 x 8 character box size
+COLOR currentcolor(currentplayer!, playerscastles)
+LINE (0, 0)-(640, 480), , BF
+row = 8
+column = 20
+SELECT CASE land(currentplayer)
+CASE IS <= 20
+z = 4
+CASE 1
+z = 4
+CASE IS > 20
+z = 6
+END SELECT
+COLOR 0
+COLOR 8
+LOCATE row + 2, column:     PRINT "ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»"
+FOR q = 1 TO z
+LOCATE row + 2 + q, column: PRINT "º                                     º"
+NEXT q
+LOCATE row + 2 + q, column: PRINT "ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼"
+SELECT CASE land(currentplayer)
+CASE 1
+LOCATE row + 3, column + 2: PRINT "Thine determination was great, but"
+LOCATE row + 4, column + 2: PRINT "your profit was small.  Nevertheless"
+LOCATE row + 5, column + 2: PRINT "thou hast promoted 1 soldier to your"
+LOCATE row + 6, column + 2: PRINT "royal army."
+soldiers(currentplayer) = 1 + soldiers(currentplayer)
+CASE IS < 20
+IF land(currentplayer) <> 1 THEN
+LOCATE row + 3, column + 2: PRINT "Thine determination was great, and"
+LOCATE row + 4, column + 2: PRINT "your profit was fair.  Consequently"
+LOCATE row + 5, column + 2: PRINT "thou hast promoted"; land(currentplayer); "soldiers to"
+LOCATE row + 6, column + 2: PRINT "your royal army."
+soldiers(currentplayer) = land(currentplayer) + soldiers(currentplayer)
+END IF
+CASE IS > 19
+LOCATE row + 3, column + 2: PRINT "As thou traveled from one end of the"
+LOCATE row + 4, column + 2: PRINT "kingdom to another thou saw many who"
+LOCATE row + 5, column + 2: PRINT "were anxious to aid in thine cause."
+LOCATE row + 6, column + 2: PRINT "Several of them even decided to join"
+LOCATE row + 7, column + 2: PRINT "your holy army.  Your army now has "
+LOCATE row + 8, column + 2: PRINT ""; land(currentplayer); "more soldiers."
+soldiers(currentplayer) = land(currentplayer) + soldiers(currentplayer)
+END SELECT
+DO
+LOOP WHILE INKEY$ = ""
+END SUB
+
+SUB MoveArmy (death, names$, gold, movement, scenario, skillevel, landposition, currentplayer, xposcastle, yposcastle, players, playerscastles, xposarmy, yposarmy, land, firstround)
+pause = 1
+CALL lookatmap(homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+x = xposarmy(currentplayer): y = yposarmy(currentplayer)
+                COLOR currentcolor(currentplayer, playerscastles)
+                PAINT (x + 10, y + 10), , 0
+                IF firstround = yes THEN
+                landposition(x / 20, y / 20) = currentcolor(currentplayer, playerscastles)
+                land(currentplayer) = 1 + land(currentplayer)
+                END IF
+x1 = 1: x2 = 21: y1 = 1: y2 = 21
+DIM picture(dimsize(x1, x2, y1, y2))
+
+IF xposarmy(currentplayer) <> 0 THEN
+x = xposarmy(currentplayer)
+y = yposarmy(currentplayer)
+END IF
+CALL soldier(x, y, currentplayer, q, playerscastles)
+DO
+                                                         ' ³
+DO                                                       ' ³
+choice$ = INKEY$                                         'ÄÅÄÄÄÄÄÄÄÄ
+LOOP WHILE choice$ = ""                                  ' ³       ³
+                                                         ' ³       ³
+choice$ = RIGHT$(choice$, 1)                             ' ³       ³(+13)
+curcolor = currentcolor(currentplayer, playerscastles)   ' ³       
+movehappen = moves                                       ' ³(+11) ÚÄ¿
+IF choice$ = "1" THEN choice$ = CHR$(endk)
+IF choice$ = "2" THEN choice$ = CHR$(down)
+IF choice$ = "3" THEN choice$ = CHR$(pgdn)
+IF choice$ = "4" THEN choice$ = CHR$(left)
+IF choice$ = "6" THEN choice$ = CHR$(right)
+IF choice$ = "7" THEN choice$ = CHR$(home)
+IF choice$ = "8" THEN choice$ = CHR$(up)
+IF choice$ = "9" THEN choice$ = CHR$(pgup)
+SELECT CASE choice$                                      ' ³ÄÄÄÄÄ>³Û³
+        CASE CHR$(down)                                  ' ³      ÀÄÙ
+        test = POINT(x + 10, y + 30)                     '          (Shield)
+        shield = POINT(x + 13, y + 31)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        yposarmy(currentplayer) = 20 + yposarmy(currentplayer)
+        moves = 1 + moves
+        END IF
+       
+        CASE CHR$(up)
+        test = POINT(x + 10, y - 10)
+        shield = POINT(x + 13, y - 9)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        yposarmy(currentplayer) = yposarmy(currentplayer) - 20
+        moves = 1 + moves
+        END IF
+       
+        CASE CHR$(left)
+        test = POINT(x - 10, y + 10)
+        shield = POINT(x - 7, y + 11)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        xposarmy(currentplayer) = xposarmy(currentplayer) - 20
+        moves = 1 + moves
+        END IF
+       
+        CASE CHR$(right)
+        test = POINT(x + 30, y + 10)
+        shield = POINT(x + 33, y + 11)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        xposarmy(currentplayer) = 20 + xposarmy(currentplayer)
+        moves = 1 + moves
+        END IF
+
+        CASE CHR$(endk)  'downleft
+        test = POINT(x - 10, y + 30)
+        shield = POINT(x - 7, y + 31)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        yposarmy(currentplayer) = 20 + yposarmy(currentplayer)
+        xposarmy(currentplayer) = xposarmy(currentplayer) - 20
+        moves = 1 + moves
+        END IF
+      
+        CASE CHR$(pgdn)  'downright
+        test = POINT(x + 30, y + 30)
+        shield = POINT(x + 33, y + 31)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        yposarmy(currentplayer) = yposarmy(currentplayer) + 20
+        xposarmy(currentplayer) = xposarmy(currentplayer) + 20
+        moves = 1 + moves
+        END IF
+       
+        CASE CHR$(pgup)  'upright
+        test = POINT(x + 30, y - 10)
+        shield = POINT(x + 33, y - 9)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        xposarmy(currentplayer) = xposarmy(currentplayer) + 20
+        yposarmy(currentplayer) = yposarmy(currentplayer) - 20
+        moves = 1 + moves
+        END IF
+      
+        CASE CHR$(home)  'home
+        test = POINT(x - 10, y - 10)
+        shield = POINT(x - 7, y - 9)
+        IF test <> 1 AND test <> 6 AND test <> 15 AND test <> 0 AND test <> -1 THEN
+        xposarmy(currentplayer) = xposarmy(currentplayer) - 20
+        yposarmy(currentplayer) = yposarmy(currentplayer) - 20
+        moves = 1 + moves
+        END IF
+'land(currentplayer)
+END SELECT
+
+IF movehappen <> moves AND shield <> 5 AND test <> 7 AND test <> currentcolor(currentplayer, playerscastles) THEN
+land(currentplayer) = land(currentplayer) + 1
+placecurrentplayer = currentplayer
+        FOR i = 1 TO players
+        currentplayer = i
+                IF currentcolor(currentplayer, playerscastles) = test THEN
+                land(currentplayer) = land(currentplayer) - 1
+                END IF
+        NEXT i
+currentplayer = placecurrentplayer
+landposition(xposarmy(currentplayer) / 20, yposarmy(currentplayer) / 20) = currentcolor(currentplayer, playerscastles)
+END IF
+
+IF movehappen <> moves THEN
+IF drawbridge = 1 THEN
+        drawbridge = 0
+        bridgecheck = POINT(x, y + 10)
+        y = y + 20
+        a = x: B = y
+        x = x - 1: y = y - 1
+        IF bridgecheck <> 7 THEN
+                CALL drawvertbridge(x, y)
+        ELSE
+                CALL drawhorobridge(x, y)
+        END IF
+        x = a: y = B
+ELSE
+        COLOR 0: LINE (x - 1, y - 1)-(x + 19, y + 19), , B
+        GET (x, y)-(x + 19, y + 19), picture
+        COLOR currentcolor(currentplayer, playerscastles)
+        'IF test <> 0 AND shield <> 5 AND test <> curcolor AND x <> xposarmy(currentplayer) AND y <> yposarmy(currentplayer) THEN
+        PAINT (x + 10, y + 10), , 0
+        'END IF
+END IF
+END IF
+IF test = 7 THEN
+drawbridge = 1
+moves = moves - 1
+END IF
+
+IF drawbridge = 1 THEN
+        x = xposarmy(currentplayer): y = yposarmy(currentplayer)
+        CALL soldier(x, y, currentplayer, q, playerscastles)
+ELSE
+        IF test <> 0 AND shield <> 5 AND movehappen <> moves THEN
+        PUT (xposarmy(currentplayer), yposarmy(currentplayer)), picture, PSET
+        END IF
+END IF
+x = xposarmy(currentplayer): y = yposarmy(currentplayer)
+'****************| Section that checks for a battle! |************************
+IF test = 15 OR test = 0 AND shield <> 2 AND shield <> 0 AND shield <> 15 AND shield <> 7 AND shield <> 8 THEN
+placecurrentplayer = currentplayer
+        FOR i = 1 TO players
+        currentplayer = i
+                IF currentcolor(currentplayer, playerscastles) = shield THEN
+                attacker = placecurrentplayer
+                defender = currentplayer
+                currentplayer = attacker
+                '[HI]><[YOU] a battle occurs between the two!
+                CALL FieldBattle(names$, players, land, landposition, xposarmy, yposarmy, xposcastle, yposcastle, skillevel, attacker, defender, currentplayer, playerscastles, soldiers, knights, catapults, death, gold, defense, offense)
+                EXIT SUB
+                END IF
+        NEXT i
+currentplayer = placecurrentplayer
+
+IF shield = 5 THEN
+
+SELECT CASE choice$
+CASE CHR$(down):  ycast = y + 40: xcast = x
+CASE CHR$(up):    ycast = y:      xcast = x
+CASE CHR$(left):  xcast = x - 20: ycast = y + 20
+CASE CHR$(right): xcast = x + 20: ycast = y + 20
+CASE CHR$(home):  xcast = x - 20: ycast = y
+CASE CHR$(pgup):  xcast = x + 20: ycast = y       'ok
+CASE CHR$(endk):  xcast = x - 20: ycast = y + 40
+CASE CHR$(pgdn):  xcast = x + 20: ycast = y + 40
+
+
+END SELECT
+shield = POINT(xcast + 10, ycast - 22)
+CALL castlebattle(numofcastles, land, xcast, ycast, players, shield, homearmy, playerscastles, xposcastle, yposcastle, attacker, defender, currentplayer, soldiers, death, gold, defense, offense, knights, catapults)
+EXIT SUB
+END IF
+' (attacker, defender, currentplayer, playerscastles, soldiers, knights,
+'catapults, death, gold, defense, offense)
+
+
+END IF
+LOOP WHILE moves <= movement(currentplayer)
+DO
+LOOP WHILE INKEY$ = ""
+END SUB
+
+SUB NumberOfPlayers (currentplayer, players, computers, scenario)
+CONST space = 32, esc = 27, enter = 13, tabkey = 9
+CONST down = 80, up = 72, left = 75, right = 77
+CONST home = 71, endk = 79, pgdn = 81, pgup = 73
+CONST ins = 82, del = 83, null = 0
+CONST ctrld = 4, ctrlg = 7, ctrlh = 8, ctrls = 19, ctrlv = 22
+SCREEN 12
+CLS
+COLOR 1
+LINE (0, 210)-(650, 210)
+PAINT (320, 320)
+ colornumber = 65536 * 20 + 256 * 25 + 20
+PALETTE 2, colornumber
+COLOR 2
+CIRCLE (640, 440), 200
+PAINT (560, 420)
+CIRCLE (640, 210), 100
+PAINT (590, 220)
+COLOR 0
+LINE (680, 209)-(480, 100), , BF
+COLOR 2
+LINE (540, 210)-(640, 150)
+PAINT (600, 200)
+x = 620: y = 162: q = 4
+CALL castle(x, y, q)
+        
+        DO
+        DO
+        RANDOMIZE TIMER
+        x = RND * 640
+        y = RND * 208
+        size = RND * 100
+        LOOP WHILE x > 540 AND y > 150
+        stars = stars + 1
+        COLOR 15
+        IF size < 35 THEN
+        LINE (x, y)-(x, y)
+        ELSE
+        CIRCLE (x, y), 1
+        END IF
+        LOOP WHILE stars < 100
+                
+                LOCATE 1, 1: PRINT "How many valorous knights wish to play? (Press Enter to confirm)"
+                LOCATE 3, 1: PRINT "  1    2    3    4    5"
+                LOCATE 5, 3: PRINT "Load a saved game"
+                LOCATE 7, 3: PRINT "Load a new scenario"
+                COLOR 4
+                LINE (41, 25)-(81, 49), , B
+                x = 41: y = 25: ysave = 60: yscen = 92
+                COLOR 15
+               
+                DO
+                        a& = TIMER
+                        k = 0
+                                DO
+                                B& = TIMER
+                                IF B& - a& > 2 THEN
+                                CALL shootstar
+                                a& = TIMER
+                                END IF
+                                choice$ = INKEY$
+                                IF choice$ <> "" THEN EXIT DO
+                                LOOP
+                 choice$ = RIGHT$(choice$, 1)
+                rightlimit = 161
+                IF selectscenario = 1 THEN rightlimit = 201
+                IF choice$ <> "" THEN
+                SELECT CASE choice$
+                       
+                        CASE CHR$(left)
+                        IF x = 1 OR y = ysave OR y = yscen THEN
+                        BEEP
+                        ELSE
+                        COLOR 0
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        COLOR 4
+                        x = x - 40
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        END IF
+                       
+                        CASE CHR$(right)
+                        IF x = rightlimit OR y = ysave OR y = yscen THEN
+                        BEEP
+                        ELSE
+                        COLOR 0
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        COLOR 4
+                        x = x + 40
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        END IF
+               
+                        CASE CHR$(up)
+                        IF y = 25 THEN
+                        BEEP
+                        ELSE
+                        SELECT CASE y
+                        CASE 60
+                                COLOR 0
+                                LINE (x, y)-(x + 153, y + 24), , B
+                                x = 41: y = 25
+                                COLOR 4
+                                LINE (x, y)-(x + 40, y + 24), , B
+                        CASE 92
+                                COLOR 0
+                                LINE (x, y)-(x + 167, y + 24), , B
+                                x = 8: y = ysave
+                                COLOR 4
+                                LINE (x, y)-(x + 153, y + 24), , B
+                       
+                       
+                        END SELECT
+                        END IF
+
+                        CASE CHR$(down)
+
+                        
+                        SELECT CASE y
+                        CASE 25
+                                COLOR 0
+                                LINE (x, y)-(x + 40, y + 24), , B
+                                x = 8: y = ysave
+                                COLOR 4
+                                LINE (x, y)-(x + 153, y + 24), , B
+                        CASE 60
+                                COLOR 0
+                                LINE (x, y)-(x + 153, y + 24), , B
+                                x = 8: y = yscen
+                                COLOR 4
+                                LINE (x, y)-(x + 167, y + 24), , B
+                        CASE ELSE
+                                BEEP
+                        END SELECT
+                       
+                        CASE CHR$(enter)
+                        SELECT CASE y
+                        CASE 60 'loading a saved game
+                                
+                                CALL loadgame(skillevel, movement, names$, players, soldiers, knights, catapults, gold, xposarmy, yposarmy, land, playerscastles, numofcastles, homearmy, xposcastle, yposcastle, currentplayer, landposition)
+                                IF movement(1) > 0 THEN EXIT SUB
+                                computers = 10
+                                EXIT SUB
+                        CASE 92 'loading a new scenario
+                             
+                                        COLOR 15
+                                        LOCATE 1, 1: PRINT "Which scenario do you wish to play on? "
+                                        LOCATE 3, 1: PRINT "  1    2    3    4    5    6"
+                                        selectscenario = 1
+                             
+                                        IF y = 25 THEN
+                                        scenario = (x + 39) / 40
+                                       
+                                        END IF
+                            
+                        CASE 25
+                               
+                                IF selectscenario = 1 THEN
+                                        COLOR 15
+                                        scenario = (x + 39) / 40
+                                        LOCATE 1, 1: PRINT "How many valorous knights wish to play? (Press Enter to confirm)"
+                                        LOCATE 3, 1: PRINT "  1    2    3    4    5     "
+                                        selectscenario = 0
+                                        COLOR 4
+                                        LINE (x, y)-(x + 40, y + 24), , B
+                                ELSE
+                                        players = (x + 39) / 40
+                                        EXIT DO
+                                END IF
+                        END SELECT
+                END SELECT
+                END IF
+               
+                B& = TIMER
+                IF B& - a& > 1 THEN
+                        
+                        CALL shootstar
+                END IF
+                LOOP
+IF players = 5 THEN EXIT SUB
+COLOR 15
+IF bob <> 0 THEN
+LOCATE 5, 1: PRINT "How many artificial knights wish to become thine adversaries? (Computer Players)"
+SELECT CASE players
+
+CASE 4
+upperlimit = 1
+LOCATE 6, 1: PRINT "  0    1  "
+
+CASE 3
+upperlimit = 2
+LOCATE 6, 1: PRINT "  0    1    2"
+
+CASE 2
+upperlimit = 3
+LOCATE 6, 1: PRINT "  0    1    2    3"
+
+CASE 1
+upperlimit = 3
+LOCATE 6, 1: PRINT "  1    2    3    4"
+END SELECT
+x = 41: y = 76
+DO
+COLOR 4
+LINE (x, y)-(x + 40, y + 24), , B
+COLOR 15
+              
+                a& = TIMER
+                DO
+                B& = TIMER
+                        IF a& + 1 > B& THEN
+                        CALL shootstar
+                END IF
+                choice$ = INKEY$
+                LOOP WHILE choice$ = ""
+                choice$ = RIGHT$(choice$, 1)
+                SELECT CASE choice$
+                     
+                        CASE CHR$(left)
+                        IF x = 1 THEN
+                        BEEP
+                        ELSE
+                        COLOR 0
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        COLOR 4
+                        x = x - 40
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        END IF
+                      
+                        CASE CHR$(right)
+                        IF x = (upperlimit * 40) + 1 THEN
+                        BEEP
+                        ELSE
+                        COLOR 0
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        COLOR 4
+                        x = x + 40
+                        LINE (x, y)-(x + 40, y + 24), , B
+                        END IF
+              
+                        CASE CHR$(enter)
+                        computers = (x - 1) / 40
+                        EXIT DO
+                END SELECT
+LOOP
+
+END IF
+END SUB
+
+SUB playmenu (choice, names$, currentplayer)
+COLOR 6
+'Go on a morale boosting tour.
+'Train your army.
+'Raid an enemy castle.
+'Send forth the abroad army.
+'Hire more soldiers to thine holy cause.
+'Look at map.
+'Build a castle.
+'
+'Build abroad army / Reinforce home army.
+'Strengthen Capital castle.
+
+comm$ = "What would thou have us do,"'names$(currentplayer) ;":"
+comm1$ = "   Build thine holy army?"
+comm2$ = "   Raid an enemy castle?"
+comm3$ = "  Promote soldiers to thine cause?"
+comm4$ = " Train the army for ?  "
+comm5$ = "Build a castle?"
+comm6$ = " Look at the Map?  "
+comm7$ = "  Save the Game?   "
+IF gold(currentplayre) > 9999 THEN add = 2
+IF gold(currentplayer) > 999 THEN add = 1
+IF gold(currentplayer) < 100 THEN add = -1
+
+LOCATE 6, 9: PRINT "What should we do next?  You have"
+LOCATE 7, 10: PRINT gold(currentplayer); "gold"
+LOCATE 7, 9 + 11 + add: PRINT names$(currentplayer)
+LOCATE 7, 9 + 10 + LEN(names$(currentplayer)) + add: PRINT "."
+LOCATE 9, 8: PRINT comm1$
+LOCATE 11, 8: PRINT comm2$
+LOCATE 13, 8: PRINT comm3$
+LOCATE 15, 8: PRINT comm4$
+LOCATE 17, 8: PRINT comm5$
+LOCATE 19, 8: PRINT comm6$
+LOCATE 21, 8: PRINT comm7$
+
+h = 18
+
+x = 0
+row = 8
+COLOR 9
+LOCATE h - 9, 8: PRINT comm1$
+DO
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+choice$ = RIGHT$(choice$, 1)
+
+SELECT CASE choice$
+
+        CASE CHR$(up)
+        IF row = 8 THEN BEEP
+        IF row <> 8 THEN
+          
+               SELECT CASE row
+               
+                CASE 14
+                COLOR 6
+                LOCATE h + 3, 8: PRINT comm7$
+                row = row - 1
+                COLOR 9
+                LOCATE h + 1, 8: PRINT comm6$
+               
+                CASE 13
+                COLOR 6
+                LOCATE h + 1, 8: PRINT comm6$
+                row = row - 1
+                COLOR 9
+                LOCATE h - 1, 8: PRINT comm5$
+               
+                CASE 12
+                COLOR 6
+                LOCATE h - 1, 8: PRINT comm5$
+                row = row - 1
+                COLOR 9
+                LOCATE h - 3, 8: PRINT comm4$
+               
+                CASE 11
+                COLOR 6
+                LOCATE h - 3, 8: PRINT comm4$
+                row = row - 1
+                COLOR 9
+                LOCATE h - 5, 8: PRINT comm3$
+               
+                CASE 10
+                COLOR 6
+                LOCATE h - 5, 8: PRINT comm3$
+                row = row - 1
+                COLOR 9
+                LOCATE h - 7, 8: PRINT comm2$
+                           
+                CASE 9
+                COLOR 6
+                LOCATE h - 7, 8: PRINT comm2$
+                row = row - 1
+                COLOR 9
+                LOCATE h - 9, 8: PRINT comm1$
+               
+                END SELECT
+       
+        END IF
+
+
+
+        CASE CHR$(down)
+            IF row = 14 THEN BEEP
+            IF row <> 14 THEN
+
+                SELECT CASE row
+               
+                CASE 8
+                COLOR 6
+                LOCATE h - 9, 8: PRINT comm1$
+                row = row + 1
+                COLOR 9
+                LOCATE h - 7, 8: PRINT comm2$
+               
+                CASE 9
+                COLOR 6
+                LOCATE h - 7, 8: PRINT comm2$
+                row = row + 1
+                COLOR 9
+                LOCATE h - 5, 8: PRINT comm3$
+               
+                CASE 10
+                COLOR 6
+                LOCATE h - 5, 8: PRINT comm3$
+                row = row + 1
+                COLOR 9
+                LOCATE h - 3, 8: PRINT comm4$
+               
+                CASE 11
+                COLOR 6
+                LOCATE h - 3, 8: PRINT comm4$
+                row = row + 1
+                COLOR 9
+                LOCATE h - 1, 8: PRINT comm5$
+               
+                CASE 12
+                COLOR 6
+                LOCATE h - 1, 8: PRINT comm5$
+                row = row + 1
+                COLOR 9
+                LOCATE h + 1, 8: PRINT comm6$
+                           
+                CASE 13
+                COLOR 6
+                LOCATE h + 1, 8: PRINT comm6$
+                row = row + 1
+                COLOR 9
+                LOCATE h + 3, 8: PRINT comm7$
+               
+                END SELECT
+             END IF
+
+        CASE CHR$(enter)
+        choice = row
+        EXIT SUB
+        CASE ELSE
+        BEEP
+END SELECT
+
+LOOP
+END SUB
+
+
+SUB pointer
+x1 = 0: x2 = 25: y1 = 0: y2 = 25
+DIM blackspot(dimsize(x1, x2, y1, y2))
+GET (0, 0)-(20, 20), blackspot
+COLOR 0
+LINE (0, 0)-(20, 20), , BF
+COLOR 4
+LINE (12, 5)-(12, 10)
+LINE (12, 14)-(12, 19)
+LINE (5, 12)-(10, 12)
+LINE (14, 12)-(19, 12)
+DIM cross(dimsize(x1, x2, y1, y2))
+GET (0, 0)-(20, 20), cross
+PUT (0, 0), blackspot, PSET
+ERASE blackspot
+x = 300
+y = 300
+PUT (x, y), cross, XOR
+
+movement = 10
+DO
+B = x: c = y
+LOCATE 1, 1: PRINT "x="; x + 12
+LOCATE 2, 1: PRINT "y="; y + 12
+spot = POINT(x + 12, y + 12)
+LOCATE 3, 1: PRINT "Color at center="; spot
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+choice$ = RIGHT$(choice$, 1)
+
+SELECT CASE choice$
+CASE ","
+IF movement > 1 THEN
+movement = movement - 1
+ELSE
+BEEP
+END IF
+CASE "."
+IF movement < 20 THEN
+movement = movement + 1
+ELSE
+BEEP
+END IF
+CASE CHR$(up)
+ IF y - movement < 0 THEN
+ BEEP
+ ELSE
+ y = y - movement
+ END IF
+CASE CHR$(down)
+ IF y + movement > 480 THEN
+ BEEP
+ ELSE
+ y = y + movement
+ END IF
+CASE CHR$(left)
+ IF x - movement < 0 THEN
+ BEEP
+ ELSE
+ x = x - movement
+ END IF
+CASE CHR$(right)
+ IF x + movement > 640 THEN
+ BEEP
+ ELSE
+ x = x + movement
+ END IF
+CASE CHR$(enter)
+ obnum = obnum + 1
+ locx = CINT(x / 8)
+ locy = CINT(y / 16)
+ LOCATE locy, locx: PRINT obnum
+ LOCATE locy, locx + 2: PRINT "x="; x + 12
+ LOCATE locy + 1, locx: PRINT "  y="; y + 12
+CASE CHR$(esc)
+CASE ELSE
+BEEP
+END SELECT
+ PUT (B, c), cross, XOR
+ PUT (x, y), cross, XOR
+LOOP
+END SUB
+
+SUB raidcastle (scenario, xposcastle, yposcastle, names$, currentplayer, gold, homearmy, playerscastles, players)
+CLS
+PALETTE
+c = 100
+SELECT CASE scenario
+CASE 1: CALL Markland(x, y, c, players)
+CASE 2
+CASE 3
+CASE 4
+CASE 5
+CASE 6
+END SELECT
+  place = currentplayer
+  FOR i = 1 TO players
+  currentplayer = i
+  FOR j = 1 TO 4
+  IF xposcastle(j, i) <> 0 THEN
+  x = xposcastle(j, i)
+  y = yposcastle(j, i)
+  q = currentcolor(currentplayer, playerscastles)
+  CALL castle(x, y, q)
+  END IF
+  NEXT j
+  NEXT i
+  currentplayer = place
+
+COLOR 0
+LINE (17 * 8, 21.5 * 16)-(57 * 8, 24 * 16 + (players * 16)), , BF
+COLOR 4
+LOCATE 23, 20: PRINT "Who's castle would you like to raid?"
+x = players
+a = 0
+
+        FOR i = 1 TO x
+        a = a + 1
+        IF i <> currentplayer THEN
+        LOCATE 23 + a, 24: PRINT a
+        LOCATE 23 + a, 26: PRINT ". "; names$(i)
+        dis = LEN(names$(i))
+        LOCATE 23 + a, 27 + dis: PRINT "'s"
+        ELSE
+        a = i - 1
+        END IF
+        NEXT i
+
+LOCATE 24 + a, 20: PRINT "Enter the number of the swine to rob."
+' 49 - 53 = ascii code numbers for numbers 1 - 5
+DIM playspos(players - 1)
+
+DO
+FOR B = 1 TO players - 1
+c = B
+IF B >= currentplayer THEN
+c = B + 1
+END IF
+playspos(B) = c
+NEXT B
+
+DO
+1
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+
+choice$ = RIGHT$(choice$, 1)
+RANDOMIZE TIMER
+winlose = -5
+SELECT CASE choice$
+
+CASE CHR$(49)
+chance = (homearmy(4, playspos(1)) * (RND * 30)) / 100
+IF chance >= 9 THEN
+winlose = 1
+ELSE
+loseto = playspos(1)
+winlose = 0
+END IF
+
+CASE CHR$(50)
+IF 2 >= players THEN GOTO 1
+chance = (homearmy(4, playspos(2)) * (RND * 30)) / 100
+IF chance >= 9 THEN
+winlose = 2
+ELSE
+loseto = playspos(2)
+winlose = 0
+END IF
+
+CASE CHR$(51)
+IF 3 >= players THEN GOTO 1
+chance = (homearmy(4, playspos(3)) * (RND * 30)) / 100
+IF chance >= 9 THEN
+loseto = playspos(3)
+winlose = 3
+ELSE
+winlose = 0
+END IF
+
+CASE CHR$(52)
+IF 4 >= players THEN GOTO 1
+chance = (homearmy(4, playspos(4)) * (RND * 30)) / 100
+IF chance >= 9 THEN
+winlose = 4
+ELSE
+loseto = playspos(4)
+winlose = 0
+END IF
+END SELECT
+
+IF winlose > 0 THEN
+COLOR 0
+LINE (320 - (8 * 11), 13.5 * 16)-(320 + (8 * 14), 15.5 * 16), , BF
+COLOR 4
+LOCATE 15, 31: PRINT "The raid was a success!"
+newmoney = CINT(gold(playspos(winlose)) * .6)
+gold(playspos(winlose)) = gold(playspos(winlose)) - newmoney
+gold(currentplayer) = gold(currentplayer) + newmoney
+DO
+LOOP WHILE INKEY$ = ""
+EXIT SUB
+END IF
+
+IF winlose = 0 THEN
+COLOR 0
+LINE (320 - (8 * 11), 13.5 * 16)-(320 + (8 * 23), 18.5 * 16), , BF
+COLOR 4
+LOCATE 15, 31: PRINT "The raid was a failure.  Some of"
+LOCATE 16, 31: PRINT "your best chieftains have been  "
+LOCATE 17, 31: PRINT "captured.  For their mandatory  "
+
+LOCATE 18, 31: PRINT "return you must pay"; CINT(gold(currentplayer) * .4); "!"
+valuelost = CINT(gold(currentplayer) * .4)
+gold(currentplayer) = gold(currentplayer) - valuelost
+gold(loseto) = gold(loseto) + valuelost
+DO
+LOOP WHILE INKEY$ = ""
+EXIT SUB
+END IF
+
+LOOP
+END SUB
+
+
+
+SUB Ryanland
+
+END SUB
+
+SUB savegame (skillevel, movement, names$, players, soldiers, knights, catapults, gold, xposarmy, yposarmy, land, playerscastles, numofcastles, homearmy, xposcastle, yposcastle, currentplayer, landposition)
+DIM games$(9)
+PALETTE
+CLS
+colornumber = 65536 * 1 + 256 * 1 + 1'30,35,45
+PALETTE 15, colornumber
+FOR i = 1 TO 9
+   diskfile$ = "game" + CHR$(48 + i) + ".sve"
+   OPEN diskfile$ FOR RANDOM AS #1
+   CLOSE #1
+NEXT i
+
+CLS
+COLOR 15
+VIEW PRINT 7 TO 17
+FILES "*.SVE"
+
+'LOCATE 10, 1: PRINT "12345678901234567890123456789012345678901234567890123456789"
+'LOCATE 11, 1: PRINT "         1         2         3         4         5"
+
+FOR i = 1 TO 3
+FOR h = 1 TO 72 STEP 18
+
+        m = m + 1
+        FOR j = 1 TO 12
+              
+                CHECK = SCREEN(CSRLIN - 5 + i, h + j - 1)
+                IF CHECK <> 32 THEN
+                games$(m) = games$(m) + CHR$(CHECK)
+                END IF
+        NEXT j
+        
+NEXT h
+NEXT i
+
+CLS
+SCREEN 13
+column = 4
+colornumber = 65536 * 63 + 256 * 63 + 63'30,35,45
+PALETTE 0, colornumber
+colornumber = 65536 * 1 + 256 * 1 + 1'30,35,45
+PALETTE 15, colornumber
+COLOR 8
+LINE (0, 0)-(320, 200), , BF
+COLOR 0
+LINE (4 * 8, 5.5 * 8)-(35.5 * 8, 19.5 * 5), , BF
+COLOR 15
+             '   |         5    1    5    2    5    3    5    |
+LOCATE 5, column:  PRINT "ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»"'  5
+LOCATE 6, column:  PRINT "º ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄ¿         º"'
+LOCATE 7, column:  PRINT "º ³                 ³ ³ÚÄÄÄÄÄÄ¿ º"'
+LOCATE 8, column:  PRINT "º ³                 ÃÄ´³ SAVE ³ º"'
+LOCATE 9, column:  PRINT "º ³                 ³ ³ÀÄÄÄÄÄÄÙ º"'
+LOCATE 10, column: PRINT "º ³                 ³ ³ÚÄÄÄÄÄÄ¿ º"' 1
+LOCATE 11, column: PRINT "º ³                 ³ ³³DELETE³ º"'
+LOCATE 12, column: PRINT "º ³                 ³ ³ÀÄÄÄÄÄÄÙ º"'
+LOCATE 13, column: PRINT "º ³                 ³ ³ÚÄÄÄÄÄÄ¿ º"'
+LOCATE 14, column: PRINT "º ³                 ³ ³³CANCEL³ º"'
+LOCATE 15, column: PRINT "º ³                 ³ ³ÀÄÄÄÄÄÄÙ º"'  5
+LOCATE 16, column: PRINT "º ³                 ÃÄ´ÚÄÄÄÄÄÄ¿ º"'
+LOCATE 17, column: PRINT "º ³                 ³ ³³ QUIT ³ º"'
+LOCATE 18, column: PRINT "º ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÙÀÄÄÄÄÄÄÙ º"'
+LOCATE 19, column: PRINT "º                               º"'
+LOCATE 20, column: PRINT "ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼"' 2
+COLOR 8
+LINE (23, 32)-(26, 170), , BF
+LINE (27, 25)-(300, 33), , BF        ' 
+LINE (286, 25)-(310, 180), , BF      ' 
+LINE (25, 157)-(300, 160), , BF
+COLOR 4
+LINE (45, 47)-(23 * 8, 55), , B
+DIM title$(9)
+FOR i = 1 TO 9
+        diskfile$ = "game" + CHR$(48 + i) + ".sve"
+        OPEN diskfile$ FOR INPUT AS #i
+        IF LOF(i) > 100 THEN
+                q = q + 1
+                
+                INPUT #i, title$
+                LOCATE 6 + i, 7: PRINT title$
+                title$(i) = title$
+        END IF
+        CLOSE #i
+        LENGTH = 12
+NEXT i
+row = 1: column = 7: side = 1: fun = 1
+DO
+diskfile$ = "game" + CHR$(48 + row) + ".sve"
+LOCATE 1, 1: PRINT diskfile$
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+choice$ = RIGHT$(choice$, 1)
+
+
+SELECT CASE choice$
+CASE CHR$(left)
+        IF side = 2 AND editname = 0 THEN
+        side = 1
+        COLOR 15
+        SELECT CASE fun
+        CASE 1
+                LOCATE 7, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 8, column + 20: PRINT "³ SAVE ³"'
+                LOCATE 9, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+        CASE 2
+                LOCATE 10, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 11, column + 20: PRINT "³DELETE³"'
+                LOCATE 12, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+      
+        CASE 3
+                LOCATE 13, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 14, column + 20: PRINT "³CANCEL³"'
+                LOCATE 15, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+      
+        CASE 4
+                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 17, column + 20: PRINT "³ QUIT ³"'
+                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+      
+        END SELECT
+        END IF
+CASE CHR$(right)
+        IF side = 1 AND editname = 0 THEN
+                        COLOR 4
+                        LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+        side = 2
+        COLOR 4
+        SELECT CASE fun
+        CASE 1
+                LOCATE 7, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 8, column + 20: PRINT "³ SAVE ³"'
+                LOCATE 9, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+        CASE 2
+                LOCATE 10, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 11, column + 20: PRINT "³DELETE³"'
+                LOCATE 12, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+       
+        CASE 3
+                LOCATE 13, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 14, column + 20: PRINT "³CANCEL³"'
+                LOCATE 15, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+       
+        CASE 4
+                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                LOCATE 17, column + 20: PRINT "³ QUIT ³"'
+                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+       
+        END SELECT
+        END IF
+CASE CHR$(up)
+        IF side = 1 THEN
+                IF row = 1 THEN
+                        BEEP
+                ELSE
+                   COLOR 0
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   row = row - 1
+                   COLOR 4
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   END IF
+        ELSE
+                IF fun > 1 THEN
+                        fun = fun - 1
+                        
+                        FOR i = 1 TO 2
+                                IF i = 1 THEN
+                                COLOR 4
+                                ELSE
+                                COLOR 15
+                                END IF
+                                SELECT CASE fun + i - 1
+                                        CASE 1
+                                                LOCATE 7, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 8, column + 20: PRINT "³ SAVE ³"'
+                                                LOCATE 9, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                        CASE 2
+                                                LOCATE 10, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 11, column + 20: PRINT "³DELETE³"'
+                                                LOCATE 12, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                      
+                                        CASE 3
+                                                LOCATE 13, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 14, column + 20: PRINT "³CANCEL³"'
+                                                LOCATE 15, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                      
+                                        CASE 4
+                                                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 17, column + 20: PRINT "³ QUIT ³"'
+                                                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+      
+                                END SELECT
+                        NEXT i
+                ELSE
+                        BEEP
+                END IF
+        END IF
+CASE CHR$(down)
+        IF side = 1 THEN
+                IF row = 9 THEN
+                        BEEP
+                ELSE
+                   COLOR 0
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   row = row + 1
+                   COLOR 4
+                   LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                   END IF
+                   
+        ELSE
+                IF fun < 4 THEN
+                        fun = fun + 1
+                       
+                        FOR i = 1 TO 2
+                                IF i = 1 THEN
+                                COLOR 15
+                                ELSE
+                                COLOR 4
+                                END IF
+                                SELECT CASE fun + i - 2
+                                        CASE 1
+                                                LOCATE 7, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 8, column + 20: PRINT "³ SAVE ³"'
+                                                LOCATE 9, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                        CASE 2
+                                                LOCATE 10, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 11, column + 20: PRINT "³DELETE³"'
+                                                LOCATE 12, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                     
+                                        CASE 3
+                                                LOCATE 13, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 14, column + 20: PRINT "³CANCEL³"'
+                                                LOCATE 15, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+                                     
+                                        CASE 4
+                                                LOCATE 16, column + 20: PRINT "ÚÄÄÄÄÄÄ¿"'
+                                                LOCATE 17, column + 20: PRINT "³ QUIT ³"'
+                                                LOCATE 18, column + 20: PRINT "ÀÄÄÄÄÄÄÙ"'
+     
+                                END SELECT
+                        NEXT i
+                ELSE
+                        BEEP
+                END IF
+        END IF
+
+
+CASE CHR$(enter)
+        SELECT CASE side
+        CASE 1
+                o = 1
+                o = LEN(title$(row)) + 1
+                IF o = 0 THEN o = 1
+                DO
+                       
+                        LOCATE 1, 1: PRINT title$(row) + "                "
+                       
+                        IF choice$ = CHR$(8) AND o = 1 THEN
+                        LOCATE row + 6, o + 7: PRINT " "
+                        END IF
+                        DO
+                                choice$ = INKEY$
+                        LOOP WHILE choice$ = ""
+                        choice$ = RIGHT$(choice$, 1)
+                       
+                       
+                        IF choice$ = CHR$(8) AND o > 1 THEN
+                        choice$ = ""
+                        IF o > 1 THEN
+                        title$(row) = LEFT$(title$(row), o - 2)
+                        ELSE
+                        title$(row) = LEFT$(title$(row), o - 1)
+                        END IF
+                        LOCATE row + 6, o + 6: PRINT " "
+                        o = o - 2
+                       
+                        END IF
+                       
+                        IF choice$ = CHR$(enter) THEN
+                        COLOR 4
+                        LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                               
+                                EXIT DO
+                        END IF
+                       
+                        IF o < 17 AND choice$ <> CHR$(8) THEN
+                        title$(row) = title$(row) + choice$
+                        LOCATE row + 6, 7 + o: PRINT choice$
+                        END IF
+                       
+                        IF o < 17 THEN
+                        o = o + 1
+                        END IF
+                        
+                LOOP
+        CASE 2
+                SELECT CASE fun
+                CASE 1 'save
+                        IF title$(row) <> "" THEN
+                        LOCATE 19, 6: PRINT " Saving .... "
+                        diskfile$ = "game" + CHR$(48 + row) + ".sve"
+                        KILL diskfile$
+                        OPEN diskfile$ FOR OUTPUT AS #1
+                       
+                        WRITE #1, title$(row), players, currentplayer
+                       
+                        FOR i = 1 TO 32
+                        FOR j = 1 TO 24
+                        WRITE #1, landposition(i, j)
+                        NEXT j
+                        NEXT i
+                       
+                        FOR i = 1 TO players
+                        WRITE #1, names$(i), soldiers(i), knights(i), catapults(i), gold(i), xposarmy(i), yposarmy(i), land(i), playerscastles(i), numofcastles(i), skillevel(i), movement(i)
+                        
+                       
+                        FOR j = 1 TO 4
+                        WRITE #1, xposcastle(j, i), yposcastle(j, i)
+                        WRITE #1, homearmy(j, i)
+                        NEXT j
+                        NEXT i
+                       
+                       
+                        CLOSE #1
+                        LOCATE 19, 6: PRINT "             "
+                        END IF
+                CASE 2 'delete
+                        diskfile$ = "game" + CHR$(48 + row) + ".sve"
+                        COLOR 0
+                        LINE (56, row * 8 + 40)-(56 + 126, row * 8 + 49), , BF
+                        COLOR 4
+                        LINE (45, row * 8 + 39)-(23 * 8, row * 8 + 47), , B
+                        KILL diskfile$
+                        OPEN diskfile$ FOR RANDOM AS #2
+                        CLOSE #2
+                CASE 3 'cancel
+                        COLOR 4
+                        LOCATE 19, 6: PRINT "Are you sure?(Y/N)"
+                        DO
+                        DO
+                        choice$ = INKEY$
+                        LOOP WHILE choice$ = ""
+                        choice$ = UCASE$(choice$)
+                        SELECT CASE choice$
+                        CASE "Y"
+                                CLS
+                                EXIT SUB
+                        CASE "N"
+                                LOCATE 19, 6: PRINT "                  "
+                                EXIT DO
+                        CASE ELSE
+                                BEEP
+                        END SELECT
+                        LOOP
+                CASE 4 'quit
+                        COLOR 4
+                        LOCATE 19, 6: PRINT "Are you sure?(Y/N)"
+                        DO
+                        DO
+                        choice$ = INKEY$
+                        LOOP WHILE choice$ = ""
+                        choice$ = UCASE$(choice$)
+                        SELECT CASE choice$
+                        CASE "Y"
+                                CLS
+                                SYSTEM
+                        CASE "N"
+                                LOCATE 19, 6: PRINT "                  "
+                                EXIT DO
+                        CASE ELSE
+                                BEEP
+                        END SELECT
+                        LOOP
+               
+                END SELECT
+        END SELECT
+END SELECT
+
+
+LOOP
+END SUB
+
+SUB selectcastle (players, computers, playerscastles, scenario)
+CONST space = 32, esc = 27, enter = 13, tabkey = 9
+CONST down = 80, up = 72, left = 75, right = 77
+CONST home = 71, endk = 79, pgdn = 81, pgup = 73
+CONST ins = 82, del = 83, null = 0
+CONST ctrld = 4, ctrlg = 7, ctrlh = 8, ctrls = 19, ctrlv = 22
+COLOR 0
+LINE (160, 120)-(380, 300), , BF
+COLOR 15
+             
+                DO
+                z = z + 1
+                LOCATE 11 + (z + 1), 23: PRINT "Player"; z; "'s Castle:"
+                LOOP UNTIL z >= players
+
+                DO
+                IF computers = 0 THEN EXIT DO
+                i = i + 1
+                LOCATE 13 + players, 23: PRINT "Computer"; i; "'s Castle:"
+                LOOP UNTIL i >= computers
+        firsttime = 1: m = 0: movement = 1
+        COLOR 15
+        FOR p = 1 TO players
+        
+        COLOR 15
+        LOCATE 10, 23: PRINT "Player"; p; ", select a"
+        LOCATE 11, 23: PRINT "Castle."
+DO
+DO
+        DO
+        IF firsttime = 1 THEN m = m + 1
+        
+       
+        SELECT CASE scenario
+        CASE 1
+        SELECT CASE m
+        CASE 1: x = 180: y = 340
+        CASE 2: x = 520: y = 380
+        CASE 3: x = 400: y = 220
+        CASE 4: x = 340: y = 100
+        CASE 5: x = 120: y = 120
+        END SELECT
+        CASE 2
+        SELECT CASE m
+        CASE 1: x = 120: y = 80
+        CASE 2: x = 80:  y = 460
+        CASE 3: x = 360: y = 360
+        CASE 4: x = 560: y = 400
+        CASE 5: x = 460: y = 100
+        END SELECT
+        CASE 3
+        CASE 4
+        CASE 5
+        CASE 6
+        END SELECT
+       
+        IF firsttime = 1 THEN
+                LOCATE CINT(y / 16) - 2, CINT(x / 8): PRINT m
+                IF m = 1 THEN
+                        xe = x: ye = y
+                END IF
+                IF m = 5 THEN
+                        EXIT DO
+                END IF
+        ELSE
+        EXIT DO
+        END IF
+        LOOP
+        IF firsttime = 1 THEN m = 1: movement = 1
+   
+        x = x + 3: y = y - 3
+        COLOR 4
+        IF firsttime = 1 THEN
+        LINE (xe - 21, ye + 19)-(xe + 39, ye - 41), , B
+        ELSE
+        LINE (x - 24, y + 22)-(x + 36, y - 38), , B
+        END IF
+        DO
+        choice$ = INKEY$
+        LOOP WHILE choice$ = ""
+        choice$ = RIGHT$(choice$, 1)
+ 
+                SELECT CASE choice$
+                       
+                        CASE CHR$(left)
+                        movement = 1
+                        m = m + 1: IF m = 6 THEN m = 1
+                        COLOR 0
+                        LINE (x - 24, y + 22)-(x + 36, y - 38), , B
+                        COLOR 4
+                        x = x - 40
+                        IF firsttime = 1 THEN
+                        COLOR 0:  LINE (xe - 21, ye + 19)-(xe + 39, ye - 41), , B
+                        END IF
+                       
+                        CASE CHR$(right)
+                        movement = 1
+                        m = m - 1: IF m <= 0 THEN m = 5
+                        COLOR 0
+                        LINE (x - 24, y + 22)-(x + 36, y - 38), , B
+                        COLOR 4
+                        x = x - 40
+                        IF firsttime = 1 THEN
+                        COLOR 0: LINE (xe - 21, ye + 19)-(xe + 39, ye - 41), , B
+                        END IF
+                       
+                        CASE CHR$(enter)
+                        IF movement = 1 THEN
+                        h = h + 1
+                        movement = 0
+                        SELECT CASE h
+                               
+                                CASE 1
+                                playerscastles(1) = m
+                                COLOR 15
+                                LOCATE 13, 42: PRINT playerscastles(1)
+                                COLOR 4
+                               
+                                CASE 2
+                                IF m = playerscastles(1) THEN
+                                BEEP
+                                h = h - 1
+                                variable = 69
+                                ELSE
+                                playerscastles(2) = m
+                                COLOR 15
+                                LOCATE 14, 42: PRINT playerscastles(2)
+                                COLOR 4
+                                END IF
+                                
+                                CASE 3
+                                IF m = playerscastles(1) OR m = playerscastles(2) THEN
+                                BEEP
+                                h = h - 1
+                                variable = 69
+                                ELSE
+                                playerscastles(3) = m
+                                COLOR 15
+                                LOCATE 15, 42: PRINT playerscastles(3)
+                                COLOR 4
+                                END IF
+                               
+                                CASE 4
+                                IF m = playerscastles(1) OR m = playerscastles(2) OR m = playerscastles(3) THEN
+                                BEEP
+                                h = h - 1
+                                variable = 69
+                                ELSE
+                                playerscastles(4) = m
+                                COLOR 15
+                                LOCATE 16, 42: PRINT playerscastles(4)
+                                COLOR 4
+                                END IF
+                               
+                                CASE 5
+                                IF m = playerscastles(1) OR m = playerscastles(2) OR m = playerscastles(3) OR m = playerscastles(4) THEN
+                                BEEP
+                                h = h - 1
+                                variable = 69
+                                ELSE
+                                playerscastles(5) = m
+                                COLOR 15
+                                LOCATE 17, 42: PRINT playerscastles(5)
+                                COLOR 4
+                                END IF
+                                EXIT DO
+                        END SELECT
+                        
+                        ELSE
+                        BEEP
+                        END IF
+                END SELECT
+        
+        firsttime = 0
+IF players = h THEN EXIT FOR
+LOOP WHILE variable = 69
+
+LOOP
+        
+        NEXT p
+
+END SUB
+
+SUB shootstar
+COLOR 15
+                        DO
+                        x = (RND * 440) + 100
+                        y = RND * 208
+                        LOOP WHILE x > 640 AND y > 150
+                       
+                        DO
+                        IF INKEY$ <> "" THEN EXIT DO
+                        a = POINT(x, y)
+                            
+                        COLOR 0
+                        CIRCLE (x, y), 1
+                        COLOR 15
+                        x = x - 1
+                        y = y + 1
+                        CIRCLE (x, y), 1
+                        IF INKEY$ <> "" THEN EXIT DO
+                        IF x < 1 OR y > 207 OR y < 1 THEN
+                        COLOR 0
+                        CIRCLE (x, y), 1
+                        COLOR 15
+                        EXIT DO
+                        END IF
+                        
+                                IF a <> 0 THEN
+                                k = 1
+                                B = x: c = y
+                                END IF
+                                IF k = 2 THEN
+                                CIRCLE (B, c), 1
+                                k = 0
+                                END IF
+                        IF k <> 0 THEN k = k + 1
+
+                        LOOP WHILE INKEY$ = ""
+              
+
+END SUB
+
+SUB slantpicture
+
+END SUB
+
+SUB smalldoor (x, y)
+COLOR 8
+LINE (x, y + 6)-(x, y)'left door
+LINE (x + 4, y + 6)-(x + 4, y)
+LINE (x + 1, y - 1)-(x + 3, y - 1)
+COLOR 15
+PAINT (x + 2, y + 2), , 8
+END SUB
+
+SUB smallwindow (x1, x2, y, fill)         '       x
+FOR i = 1 TO 2                            '       |
+COLOR 8
+IF i = 1 THEN x = x1 ELSE x = x2          '       
+LINE (x, y)-(x, y + 4)                    '        ±
+LINE (x + 2, y)-(x + 2, y + 4)            ' y-->  ± ±
+LINE (x + 1, y - 1)-(x + 1, y - 1)        '       ± ±
+LINE (x, y + 4)-(x + 2, y + 4)            '       ± ±
+                                          '       ± ±
+COLOR fill                                '       ±±±
+LINE (x + 1, y)-(x + 1, y + 3)
+NEXT i
+END SUB
+
+SUB soldier (x, y, currentplayer, q, playerscastles)
+SCREEN 12
+COLOR 6
+LINE (x + 5, y + 2)-(x + 5, y + 18)
+COLOR 7
+LINE (x + 3, y + 4)-(x + 5, y + 2)
+LINE (x + 4, y + 3)-(x + 6, y + 3)
+LINE (x + 5, y + 2)-(x + 7, y + 4)
+LINE (x + 3, y + 4)-(x + 7, y + 4)
+LINE (x + 10, y + 2)-(x + 12, y + 6), , BF
+COLOR 15
+LINE (x + 11, y + 9)-(x + 11, y + 7)
+LINE (x + 4, y + 8)-(x + 15, y + 8)
+LINE (x + 9, y + 8)-(x + 13, y + 14), , BF
+LINE (x + 15, y + 8)-(x + 15, y + 14)
+COLOR 8
+LINE (x + 9, y + 2)-(x + 13, y + 6), , B
+LINE (x + 11, y + 2)-(x + 11, y + 6)
+LINE (x + 9, y + 4)-(x + 13, y + 6), , BF
+LINE (x + 9, y + 14)-(x + 13, y + 18), , BF
+LINE (x + 8, y + 18)-(x + 14, y + 18)
+LINE (x + 11, y + 9)-(x + 15, y + 14), , BF
+COLOR currentcolor(currentplayer, playerscastles)
+LINE (x + 12, y + 10)-(x + 14, y + 13), , BF
+LINE (x + 11, y + 14)-(x + 11, y + 18)
+
+END SUB
+
+SUB Startpicture
+CLS
+'figure out how fast this computer is
+a& = TIMER
+DO
+speed = speed + 1
+B& = TIMER
+IF B& - a& > 1 THEN EXIT DO
+LOOP
+SCREEN 12
+COLOR 14
+x = 148: y = 80
+LINE (0, 0)-(640, 480), , B
+LINE (1, 1)-(639, 479), , B
+'*******|MEDIEVAL MASSACRE|*********
+LINE (x, y)-STEP(0, 100)
+LINE -STEP(10, 0)
+LINE -STEP(0, -61)
+LINE (x, y)-(x + 25, y + 100)
+LINE -STEP(25, -100)
+LINE -STEP(0, 100)
+LINE -STEP(-10, 0)
+LINE -STEP(0, -61)
+PAINT (x + 5, y + 30): PAINT (x + 45, y + 30)
+LINE (x + 1, y)-(x + 26, y + 100)
+LINE STEP(-2, 0)-STEP(26, -100)
+'******|M
+a = 78 + x
+B = y + 82
+CIRCLE (a, B), 20
+CIRCLE (a, B), 15
+PAINT (a + 17, B)
+COLOR 0
+LINE (a, B + 4)-(a + 30, B + 8), , BF
+COLOR 14
+LINE (a + 17, B + 3)-(a - 17, B - 3), , BF
+'******|ME
+x = 50 + a: y = B
+CIRCLE (x, y), 20
+CIRCLE (x, y), 15
+PAINT (x + 17, B)
+LINE (x + 15, y + 20)-(x + 21, y - 70), , BF
+'*******|MED
+x = 35 + x
+LINE (x, y + 20)-(x + 6, y - 20), , BF
+CIRCLE (x + 3, y - 29), 4
+PAINT (x + 3, y - 29)
+'********| MEDI
+a = 35 + x
+CIRCLE (a, B), 20
+CIRCLE (a, B), 15
+PAINT (a + 17, B)
+LINE (a + 17, B + 3)-(a - 17, B - 3), , BF
+COLOR 0
+LINE (a, B + 4)-(a + 30, B + 8), , BF
+COLOR 14
+'********| MEDIE
+x = 40 + a: y = y + 20
+LINE (x - 2, y)-(x - 20, y - 38)
+LINE STEP(0, 0)-STEP(5, 0)
+LINE STEP(0, 0)-STEP(19, 38)
+LINE STEP(0, 0)-STEP(-6, 0)
+PAINT (x, y - 2)
+LINE (x + 5, y)-(x + 23, y - 38)
+LINE STEP(0, 0)-STEP(-5, 0)
+LINE STEP(0, 0)-STEP(-19, 38)
+PAINT (x + 5, y - 5)
+'*******| MEDIEV
+x = 45 + x: y = y - 18
+CIRCLE (x, y), 20, , , , 1.2
+CIRCLE (x, y), 15, , , , 1.2
+PAINT (x + 16, y)
+LINE (x + 13, y + 3)-(x + 20, y + 20)
+LINE STEP(0, 0)-STEP(5, 0)
+LINE STEP(0, 0)-STEP(-10, -20)
+PAINT STEP(2, 7)
+'*******| MEDIEVA
+x = 35 + x: y = y + 20
+LINE (x, y)-(x + 6, y - 95), , BF
+'*******| MEDIEVAL
+x = 144: y = 200
+'*******|MASSACRE|*********
+LINE (x, y)-STEP(0, 100)
+LINE -STEP(10, 0)
+LINE -STEP(0, -61)
+LINE (x, y)-(x + 25, y + 100)
+LINE -STEP(25, -100)
+LINE -STEP(0, 100)
+LINE -STEP(-10, 0)
+LINE -STEP(0, -61)
+PAINT (x + 5, y + 30): PAINT (x + 45, y + 30)
+LINE (x + 1, y)-(x + 26, y + 100)
+LINE STEP(-2, 0)-STEP(26, -100)
+
+x = 74 + x: y = y + 80
+CIRCLE (x, y), 20, , , , 1.2
+CIRCLE (x, y), 15, , , , 1.2
+PAINT (x + 16, y)
+LINE (x + 13, y + 3)-(x + 20, y + 20)
+LINE STEP(0, 0)-STEP(5, 0)
+LINE STEP(0, 0)-STEP(-10, -20)
+PAINT STEP(2, 7)
+
+x = 50 + x: y = y
+CIRCLE (x, y), 20
+PAINT (x, y)
+COLOR 0
+LINE (x - 17, y + 20)-(x - 21, y - 20), , BF
+LINE (x + 17, y + 20)-(x + 21, y - 20), , BF
+        CIRCLE (x, y - 8), 5
+        PAINT (x, y - 8)
+        CIRCLE (x, y + 8), 5
+        PAINT (x, y + 8)
+LINE (x, y - 13)-(x + 20, y - 2)
+LINE (x, y - 5)-(x + 20, y + 6)
+PAINT (x + 5, y - 5)
+LINE (x, y + 5)-(x - 20, y - 8)
+LINE (x, y + 12)-(x - 20, y - 1)
+PAINT (x - 10, y)
+
+x = 40 + x: y = y
+COLOR 14
+CIRCLE (x, y), 20
+PAINT (x, y)
+COLOR 0
+LINE (x - 17, y + 20)-(x - 21, y - 20), , BF
+LINE (x + 17, y + 20)-(x + 21, y - 20), , BF
+        CIRCLE (x, y - 8), 5
+        PAINT (x, y - 8)
+        CIRCLE (x, y + 8), 5
+        PAINT (x, y + 8)
+LINE (x, y - 13)-(x + 20, y - 2)
+LINE (x, y - 5)-(x + 20, y + 6)
+PAINT (x + 5, y - 5)
+LINE (x, y + 5)-(x - 20, y - 8)
+LINE (x, y + 12)-(x - 20, y - 1)
+PAINT (x - 10, y)
+COLOR 14
+
+x = 40 + x
+CIRCLE (x, y), 20, , , , 1.2
+CIRCLE (x, y), 15, , , , 1.2
+PAINT (x + 16, y)
+LINE (x + 13, y + 3)-(x + 20, y + 20)
+LINE STEP(0, 0)-STEP(5, 0)
+LINE STEP(0, 0)-STEP(-10, -20)
+PAINT STEP(2, 7)
+
+x = 47 + x
+CIRCLE (x, y), 20
+CIRCLE (x, y), 15
+PAINT (x + 17, y)
+COLOR 0
+LINE (x, y - 10)-(x + 30, y + 10), , BF
+COLOR 14
+
+x = 24 + x
+LINE (x, y + 20)-(x + 6, y - 20), , BF
+CIRCLE (x + 20, y - 16), 4
+PAINT (x + 20, y - 16)
+LINE (x + 20, y - 20)-(x, y - 10)
+LINE (x + 20, y - 16)-(x, y - 6)
+PAINT (x + 9, y - 13)
+
+a = 48 + x
+B = y
+CIRCLE (a, B), 20
+CIRCLE (a, B), 15
+PAINT (a + 17, B)
+COLOR 0
+LINE (a, B + 4)-(a + 30, B + 8), , BF
+COLOR 14
+LINE (a + 17, B + 3)-(a - 17, B - 3), , BF
+y = 1: z = 1: x = 1
+B = 35: g = 55: r = 54
+        DO
+        IF y = 1 THEN B = B + .3
+        IF y = 2 THEN B = B - .3
+        IF z = 2 THEN g = g - .3
+        IF z = 1 THEN g = g + .3
+        IF x = 2 THEN r = r - .3
+        IF x = 1 THEN r = r + .3
+        blue = CINT(B)
+        green = CINT(g)
+        red = CINT(r)
+        colornumber = 65536 * blue + 256 * green + red
+        PALETTE 14, colornumber
+        COLOR 14
+        IF B > 40 THEN y = 2
+        IF B < 30 THEN y = 1
+        IF g > 61 THEN
+        z = 2
+'PLAY "mst255o2l8cfgagfgl4afl3fp6p4l8cfgagfgl4afl3fp6p4l8dgaa+agaa+agal4a+p8p4l8cfgagfgagfgl4ap6p6l2cl4ddl2cl6<al4f>p8p4l2fl3edc"
+'    {$$%%%%!!--|||||||--||--|****--|||||||--||--|****--|||||||||||||--||****--|||||||||||--|****--|--||--|--^|--|^****--|--|||}
+'
+'               1             2                   3                      4                   5                     6
+       
+       
+        PLAY "msmbt255o2p4p8l8cfgagfgl4afl3f"
+                FOR i = 1 TO speed * 3
+                IF INKEY$ <> "" THEN
+                        'PLAY "p6p4l8cfgagfgl4afl3fp6p4l8dgaa+agaa+agal4a+p8p4l8cfgagfgagfgl4ap6p6l2cl4ddl2cl6<al4f>p8p4l2fl3edc"
+                        EXIT SUB
+                END IF
+                NEXT i
+        PLAY "p6p4l8cfgagfgl4afl3f "
+                FOR i = 1 TO speed * 3
+                IF INKEY$ <> "" THEN
+                        'PLAY "p6p4l8dgaa+agaa+agal4a+p8p4l8cfgagfgagfgl4ap6p6l2cl4ddl2cl6<al4f>p8p4l2fl3edc"
+                        EXIT SUB
+                END IF
+                NEXT i
+        PLAY "p6p4l8dgaa+agaa+agal4a+"
+                FOR i = 1 TO speed * 3
+                IF INKEY$ <> "" THEN
+                        'PLAY "p8p4l8cfgagfgagfgl4ap6p6l2cl4ddl2cl6<al4f>p8p4l2fl3edc"
+                        EXIT SUB
+                END IF
+                NEXT i
+        PLAY "p8p4l8cfgagfgagfgl4a "
+                FOR i = 1 TO speed * 3
+                IF INKEY$ <> "" THEN
+                        'PLAY "p6p6l2cl4ddl2cl6<al4f>p8p4l2fl3edc"
+                        EXIT SUB
+                END IF
+                NEXT i
+        PLAY "p6p6l2cl4ddl2cl6<al4f>"
+                FOR i = 1 TO speed * 4
+                IF INKEY$ <> "" THEN
+                       'PLAY "p8p4l2fl3edc"
+                       EXIT SUB
+                END IF
+                NEXT i
+        PLAY "p8p4l2fl3edc "
+                FOR i = 1 TO speed * 3
+                IF INKEY$ <> "" THEN
+                       
+                        EXIT SUB
+                END IF
+                NEXT i
+       
+        '      {$$%%%%!!****--|||||||--||--|****--|||||||--||--|****--|||||||||||||--||****--|||||||||||--|****--|--||--|--^|--|^****--|--|||}
+        '
+        '               1                   2                   3                      4                   5                     6
+        'PLAY "mst255o2l2cl4ddl2cl6<al4f>p8p4l2fl3edc"
+        END IF
+        IF g < 50 THEN z = 1 '1
+        IF r > 61 THEN x = 2 '2
+        IF r < 50 THEN x = 1 '1
+        
+         COLOR 14
+        'LOCATE 1, 1: PRINT "blue="; blue; "green="; green; "red="; red
+        LOOP WHILE INKEY$ = ""
+        PLAY OFF
+        END SUB
+
+SUB statusreport (movement, xposcastle, yposcastle, gold, land, homearmy, soldiers, knights, catapults, names$, xposarmy, players)
+
+SCREEN 12
+CLS
+WIDTH 80, 30
+KEY OFF
+
+LINE (0, 0)-(213, 479), , B
+LINE (213, 0)-(426, 479), , B
+LINE (213, 0)-(639, 479), , B
+LINE (0, 240)-(642, 240)
+colornumber = 65536 * 30 + 256 * 30 + 30
+PALETTE 0, colornumber
+colornumber = 65536 * 1 + 256 * 1 + 1
+PALETTE 8, colornumber
+COLOR 8
+PAINT (0, 0), , 0
+placehold = currentplayer
+PAINT (320, 400), , 8
+FOR r = 1 TO 5 - players
+SELECT CASE r
+CASE 1
+x = 600: y = 400
+CASE 2
+x = 30: y = 400
+CASE 3
+x = 600: y = 30
+CASE 4
+x = 320: y = 400
+END SELECT
+PAINT (x, y), , 8
+NEXT r
+placehold = currentplayer
+FOR a = 1 TO players
+currentplayer = a
+COLOR currentcolor(currentplayer, playerscastles)
+SELECT CASE a
+CASE 1
+x = 0: y = 0
+CASE 2
+x = 213: y = 0
+CASE 3
+x = 426: y = 0
+CASE 4
+x = 0: y = 240
+CASE 5
+x = 426: y = 240
+END SELECT
+FOR B = 1 TO 7
+LINE (x + B, y + B)-(x + 213 - B, y + 240 - B), , B
+NEXT B
+NEXT a
+currentplayer = placehold
+
+FOR status = 1 TO players
+place = currentplayer
+currentplayer = status
+COLOR currentcolor(currentplayer, playerscastles)
+currentplayer = place
+SELECT CASE status
+CASE 1
+x = 1: y = 1
+CASE 2
+x = 213: y = 1
+CASE 3
+x = 426: y = 1
+CASE 4
+x = 1: y = 240
+CASE 5
+x = 426: y = 240
+END SELECT
+
+FOR w = 1 TO 4
+IF xposcastle(w, status) <> 0 OR yposcastle(w, status) <> 0 THEN
+numofcast = 1 + numofcast
+END IF
+NEXT w
+NAME$ = names$(status)
+' if len$(names$(2)) >  'whatever
+income = land(status) * 5 + (land(status) * 5) * numofcast / 4
+column = x / 8 + 3
+LOCATE y / 16 + 2, column:  PRINT "Player:"; status
+LOCATE y / 16 + 3, column:  PRINT "Name:"; NAME$
+LOCATE y / 16 + 4, column:  PRINT "Land Squares:"; land(status)
+LOCATE y / 16 + 5, column: PRINT "Gold"; gold(status)
+LOCATE y / 16 + 5, column + 11: PRINT "Income"; CINT(income)
+
+LOCATE y / 16 + 6, column:  PRINT "Size of Campaign Army"
+IF column < 50 THEN
+LOCATE y / 16 + 7, column:  PRINT "Soldiers:", soldiers(status)
+LOCATE y / 16 + 8, column: PRINT "Knights:", knights(status)
+LOCATE y / 16 + 9, column: PRINT "Catapults:", catapults(status)
+ELSE
+LOCATE y / 16 + 7, column:  PRINT "Soldiers:"
+LOCATE y / 16 + 8, column: PRINT "Knights:"
+LOCATE y / 16 + 9, column: PRINT "Catapults:"
+LOCATE y / 16 + 7, column + 11: PRINT soldiers(status)
+LOCATE y / 16 + 8, column + 11: PRINT knights(status)
+LOCATE y / 16 + 9, column + 11: PRINT catapults(status)
+END IF
+
+'LOCATE y / 16 + 10, COLUMN: PRINT "Number of Castles"; numofcast
+u = numofcast - 1
+IF numofcast > 1 THEN
+        FOR F = 1 TO u
+        LOCATE y / 16 + 9 + F, column: PRINT "Castle"; F; ":"; homearmy(F, status); "Soldiers"
+        NEXT F
+END IF
+
+LOCATE y / 16 + 13, column: PRINT "Home Castle:"; homearmy(4, status); "Men"
+numofcast = 0
+LOCATE y / 16 + 14, column: PRINT "Movement of Army"; movement(status)
+NEXT status
+
+
+DO
+LOOP WHILE INKEY$ = ""
+PALETTE
+END SUB
+
+SUB training (currentplayer, skillevel, movement, gold)
+SCREEN 13
+CLS
+COLOR 11
+LINE (0, 0)-(320, 117), , BF
+colornumber = 65536 * CINT(30 * .6) + 256 * CINT(35 * .6) + CINT(45 * .6)'30,35,45
+PALETTE 20, colornumber
+COLOR 20
+LINE (0, 117)-(320, 200), , BF
+'**************| PART THAT DRAWS MOUNTAINS |*********************************
+colornumber = 65536 * CINT(30 * .9) + 256 * CINT(35 * .9) + CINT(45 * .9)'30,35,45
+PALETTE 21, colornumber
+COLOR 21
+LINE (0, 79)-(60, 50)
+LINE -STEP(70 * 1.3, 37 * 1.3)   '1.70
+LINE -STEP(-70 * .51, -37 * .51)
+LINE -STEP(80, -37)
+LINE -STEP(25, 17)
+LINE -STEP(-100, 58)
+LINE -STEP(100 * 1.5, -58 * 1.5)
+LINE -STEP(50, 21)
+LINE (0, 117)-(320, 117)
+PAINT (25, 100), , 21
+
+colornumber = 65536 * CINT(30 * 1) + 256 * CINT(35 * 1) + CINT(45 * 1)'30,35,45
+PALETTE 22, colornumber
+COLOR 22
+PAINT (150, 96), , 21
+
+colornumber = 65536 * CINT(30 * .8) + 256 * CINT(35 * .8) + CINT(45 * .8)
+PALETTE 23, colornumber
+COLOR 23
+PAINT (165, 96), , 21
+LINE (120, 117)-(320, 117)
+
+
+COLOR 50
+LINE (0, 118)-(320, 118)
+LINE (200, 200)-(130, 118)'
+LINE (300, 200)-(130, 118)'120
+PAINT (10, 190), , 50
+PAINT (310, 190), , 50
+
+FOR i = 1 TO 40
+colornumber = 65536 * CINT(1 + i * .5) + 256 * CINT((43 + i \ 1.5) * .5) + CINT(1 + i * .5)
+PALETTE i + 23, colornumber
+NEXT i
+p = 20
+
+COLOR 50
+LINE (0, 118)-(320, 118)
+LINE (200, 200)-(130, 118)'
+LINE (300, 200)-(130, 118)'120
+PAINT (10, 190), , 50
+PAINT (310, 190), , 50
+
+RANDOMIZE TIMER
+FOR F = 1 TO 10
+k = k + 1
+SELECT CASE k
+CASE 1
+x = 220: y = 95
+CASE 2
+
+CASE 3
+x = 82: y = 100
+CASE 6
+x = 114 + 20: y = 147
+CASE 4
+x = 88 + 20: y = 120
+CASE 5
+x = 33 + 20: y = 118
+CASE 7
+x = 61 + 20: y = 147
+CASE 8
+x = 0 + 20: y = 130
+CASE 11
+x = 295: y = 135
+CASE 10
+x = 275: y = 120
+CASE 9
+x = 250: y = 105
+END SELECT                                   '15.66667 8.25 33.28 17.23  53
+
+FOR g = 1 TO 40
+COLOR g + 23
+distance = ((y - 80) / 10)
+heigth = (y * 16 - 1410) / 80
+distance = distance / 2 + 3
+depth = 8 - distance
+IF depth < 1 THEN depth = 1
+LINE (x, y)-(x + g \ -depth, y + 28 + heigth * 2)
+LINE (x, y)-(x + 1 + g \ depth, y + 28 + heigth * 2)
+NEXT g
+
+NEXT F
+COLOR 20
+FOR flag = 1 TO 10
+across = (flag * 15) + flag ^ 2.3 / 1.5
+downvalue = (flag * 8 + (flag ^ 2.3 / 4))
+x = 120 + across
+y = 110 + downvalue
+newx = across - newx
+newy = downvalue - newy
+COLOR 20
+LINE (x, y)-(x, y - (flag * 2) * 2)
+COLOR currentcolor(currentplayer!, playerscastles)
+LINE (x + 1, y - (flag * 2) * 2)-STEP(newx * .18, newy / 7)
+LINE -STEP(newx * -.18, newy / 7)
+LINE -STEP(0, -1 * newy / 3.5)
+IF flag > 2 THEN
+PAINT STEP(newx * .06, newy / 7), , currentcolor(currentplayer!, playerscastles)
+END IF
+NEXT flag
+colornumber = 65536 * 63 + 256 * 63 + 63
+PALETTE 0, colornumber
+colornumber = 65536 * 1 + 256 * 1 + 1
+PALETTE 230, colornumber
+COLOR 230
+x = 5: y = 5
+a = 130: B = 55
+LINE (x, y)-(x + a, y + B), , BF
+x = x + 5: y = y + 5
+COLOR 0
+LINE (x, y)-(x + a, y + B), , BF
+COLOR currentcolor(currentplayer!, playerscastles)
+LOCATE 3, 3: PRINT "Select the area"
+LOCATE 4, 3: PRINT "to train in:   "
+IF gold(currentplayer) >= (skillevel(currentplayer)) * 100 THEN
+LOCATE 5, 3: PRINT " 1. Skill in   "
+LOCATE 6, 3: PRINT "    battle.    "
+crap = 1 + crap
+END IF
+IF gold(currentplayer) >= (1 + movement(currentplayer)) * 100 THEN
+LOCATE 7, 3: PRINT " 2. Movement   "
+crap = 1 + crap
+END IF
+IF crap = 0 THEN EXIT SUB
+
+DO
+DO
+choice$ = INKEY$
+LOOP WHILE choice$ = ""
+SELECT CASE choice$
+CASE "1"
+        IF gold(currentplayer) - (100 * (skillevel(currentplayer) - 1)) < 0 THEN
+        FOR i = 1 TO 5
+        LOCATE 2 + i, 3: PRINT "               "
+        NEXT i
+        LOCATE 4, 3: PRINT " Not enough  "
+        LOCATE 5, 3: PRINT "   money     "
+        EXIT SUB
+        ELSE
+        skillevel(currentplayer) = skillevel(currentplayer) + 1
+        gold(currentplayer) = gold(currentplayer) - (100 * (skillevel(currentplayer) - 1))
+        EXIT DO
+        END IF
+CASE "2"
+        IF gold(currentplayer) - (100 * (movement(currentplayer) + 1)) < 0 THEN
+        FOR i = 1 TO 5
+        LOCATE 2 + i, 3: PRINT "               "
+        NEXT i
+        LOCATE 4, 3: PRINT " Not enough  "
+        LOCATE 5, 3: PRINT "   money     "
+        EXIT SUB
+        ELSE
+        movement(currentplayer) = movement(currentplayer) + 1
+        gold(currentplayer) = gold(currentplayer) - (100 * (movement(currentplayer)))
+        EXIT DO
+        END IF
+CASE ELSE
+BEEP
+END SELECT
+LOOP
+
+LOCATE 3, 3: PRINT "Weeks of hard, "'
+LOCATE 4, 3: PRINT "vigorous,      "
+LOCATE 5, 3: PRINT "training and   "
+LOCATE 6, 3: PRINT "mental focusing"; ""
+LOCATE 7, 3: PRINT "have increased "
+DO
+LOOP WHILE INKEY$ = ""
+FOR i = 1 TO 5
+LOCATE 2 + i, 3: PRINT "               "
+NEXT i
+LOCATE 3, 3: PRINT "the abilities  "
+LOCATE 4, 3: PRINT "of your army to"
+LOCATE 5, 3: PRINT "kick butt.     "
+LOCATE 6, 3: PRINT "However, it    "
+LOCATE 7, 3: PRINT "used     gold. "
+SELECT CASE choice$
+CASE "1"
+LOCATE 7, 7: PRINT skillevel(currentplayer) * 100
+CASE "2"
+LOCATE 7, 7: PRINT movement(currentplayer) * 100
+END SELECT
+DO
+LOOP WHILE INKEY$ = ""
+
+END SUB
+
+SUB TransferMen (scenario, skipit, soldiers!, homearmy!, currentplayer!, xposcastle, yposcastle, xposarmy, yposarmy, playerscastles)
+IF skipit <> 999 THEN
+FOR q = 1 TO 6
+LOCATE 12 + q, 16: PRINT "                                               "
+NEXT q
+row = 10
+column = 21
+LOCATE row, column:     PRINT "Because you only have soldiers defending"
+LOCATE row + 1, column: PRINT "your castle, (no knights or catapults - "
+LOCATE row + 2, column: PRINT "they wouldn't do a whole lot of good    "
+LOCATE row + 3, column: PRINT "standing on the castle walls) it is only"
+LOCATE row + 4, column: PRINT "logical that you exchange soldiers.     "
+LOCATE row + 5, column: PRINT "Press two numbers, for the two places   "
+LOCATE row + 6, column: PRINT "where the exhanging is to take place    "
+LOCATE row + 7, column: PRINT "between. (You may exchange between your "
+LOCATE row + 8, column: PRINT "army and a castle and exchange between"
+LOCATE row + 9, column: PRINT "castles.) "
+DO
+LOOP WHILE INKEY$ = ""
+END IF
+CLS
+SCREEN 12
+PALETTE
+c = 100
+CALL lookatmap(homearmy, scenario, players, landposition, xposcastle, yposcastle, pause, playerscastles)
+q = currentcolor(currentplayer, playerscastles)
+COLOR q
+FOR i = 1 TO 4
+        x = xposcastle(i, currentplayer)
+        y = yposcastle(i, currentplayer)
+        IF x <> 0 OR y <> 0 THEN
+                CALL castle(x, y, q)
+        END IF
+        IF x <> 0 THEN
+                lines = 1 + lines
+                COLOR 0
+                LINE (65 * 8, (lines - 1) * 16)-(640, 16 * lines), , BF
+                COLOR q
+
+                LOCATE 1 + lines, 65: PRINT i; homearmy(i, currentplayer); "Men"
+                IF y <> 0 THEN
+                        IF CINT(y / 16) - 3 > 0 THEN
+                                LOCATE CINT(y / 16) - 3, CINT(x / 8): PRINT i
+                                LOCATE CINT(y / 16) - 3, CINT(x / 8) + 2: PRINT "."
+                        ELSE
+                                LOCATE CINT(y / 16) + 2, CINT(x / 8): PRINT i
+                                LOCATE CINT(y / 16) + 2, CINT(x / 8) + 2: PRINT "."
+                        END IF
+                END IF
+        END IF
+NEXT i
+
+x = xposarmy(currentplayer)
+y = yposarmy(currentplayer)
+CALL soldier(x, y, currentplayer, q, playerscastles)
+LOCATE 1, 65: PRINT i; soldiers(currentplayer); "Soldiers"
+LOCATE (y / 16) + 2, CINT(x / 8): PRINT i
+LOCATE (y / 16) + 2, CINT(x / 8) + 2: PRINT "."
+LOCATE 28, 10: PRINT "Press the #s for the two places."
+DO
+DO
+DO
+place1$ = INKEY$
+LOOP WHILE place1$ = ""
+IF place1$ = "5" THEN
+place1 = 5
+EXIT DO
+END IF
+place1 = VAL(place1$)
+IF xposcastle(place1, currentplayer) <> 0 THEN EXIT DO
+LOOP
+
+DO
+DO
+place2$ = INKEY$
+LOOP WHILE place2$ = ""
+        IF place2$ = "5" AND place1$ <> "5" THEN
+        place2 = 5
+        EXIT DO
+        END IF
+place2 = VAL(place2$)
+IF place1 = 5 AND place2$ = "5" THEN
+BEEP
+ELSE
+IF xposcastle(place2, currentplayer) <> 0 AND place2 <> place1 THEN
+EXIT DO
+ELSE BEEP
+END IF
+END IF
+LOOP
+
+LOCATE 27, 10: PRINT "   Is"; place1; "and"; place2; "acceptable? (Y/N)      "
+LOCATE 27, 42: INPUT yesno$
+IF UCASE$(yesno$) = "Y" THEN
+EXIT DO
+ELSE
+LOCATE 27, 10: PRINT "Would thou give me the new numbers?"
+END IF
+place1$ = ""
+place2$ = ""
+place1 = 0
+place2 = 0
+LOOP
+CLS
+COLOR q
+LINE (0, 0)-(640, 480), , BF
+colornumber = 65536 * 63 + 256 * 63 + 63
+PALETTE 0, colornumber
+COLOR currentcolor(currentplayer!, playerscastles)
+COLOR 0
+LINE (120, 120)-(519, 359), , BF
+COLOR 8
+LINE (136, 360)-(536, 376), , BF
+LINE (520, 135)-(536, 376), , BF
+IF place1 = 5 THEN army1$ = "Campaign Army  "
+IF place2 = 5 THEN army2$ = "Campaign Army  "
+IF place1 <= 4 THEN army1$ = "Home Castle Army"
+IF place2 <= 4 THEN army2$ = "Home Castle Army"
+LOCATE 10, 24: PRINT army1$
+LOCATE 10, 42: PRINT army2$
+LOCATE 12, 29: PRINT "Soldiers"
+LOCATE 12, 42: PRINT "Soldiers"
+LOCATE 14, 38: PRINT "<"
+LOCATE 16, 32: PRINT "Transfer Again"
+LOCATE 18, 35: PRINT "Finished"
+COLOR 9
+LOCATE 14, 40: PRINT ">"
+COLOR 8
+position = 2
+DO
+COLOR 4
+SELECT CASE place1
+CASE 1: LOCATE 14, 32: PRINT homearmy(1, currentplayer)
+CASE 2: LOCATE 14, 32: PRINT homearmy(2, currentplayer)
+CASE 3: LOCATE 14, 32: PRINT homearmy(3, currentplayer)
+CASE 4: LOCATE 14, 32: PRINT homearmy(4, currentplayer)
+CASE 5: LOCATE 14, 32: PRINT soldiers(currentplayer)
+END SELECT
+
+SELECT CASE place2
+CASE 1: LOCATE 14, 44: PRINT homearmy(1, currentplayer)
+CASE 2: LOCATE 14, 44: PRINT homearmy(2, currentplayer)
+CASE 3: LOCATE 14, 44: PRINT homearmy(3, currentplayer)
+CASE 4: LOCATE 14, 44: PRINT homearmy(4, currentplayer)
+CASE 5: LOCATE 14, 44: PRINT soldiers(currentplayer)
+END SELECT
+LOCATE 1, 1: PRINT "Position="; position
+DO
+choice$ = INKEY$                  '     1   2
+LOOP WHILE choice$ = ""           '      
+choice$ = RIGHT$(choice$, 1)      '       3
+
+SELECT CASE place1
+CASE IS < 5
+menleft1 = homearmy(place1, currentplayer)
+CASE 5
+menleft1 = soldiers(currentplayer)
+END SELECT
+SELECT CASE place2
+CASE IS < 5
+menleft2 = homearmy(place2, currentplayer)
+CASE 5
+menleft2 = soldiers(currentplayer)
+END SELECT
+
+SELECT CASE choice$               '
+        CASE CHR$(up)                     '       4
+                 SELECT CASE position
+
+                 CASE 3
+                 position = 1
+                 COLOR 8
+                 LOCATE 16, 32: PRINT "Transfer Again"
+                 COLOR 9
+                 LOCATE 14, 38: PRINT "<"
+
+                 CASE 4
+                 position = 3
+                 COLOR 8
+                 LOCATE 18, 35: PRINT "Finished"
+                 COLOR 9
+                 LOCATE 16, 32: PRINT "Transfer Again"
+
+                 CASE ELSE
+                 BEEP
+
+                END SELECT
+         
+        CASE CHR$(down)
+                 SELECT CASE position
+
+                 CASE 4
+                 BEEP
+
+                 CASE 3
+                 position = 4
+                 COLOR 8
+                 LOCATE 16, 32: PRINT "Transfer Again"
+                 COLOR 9
+                 LOCATE 18, 35: PRINT "Finished"
+
+                 CASE 1
+                 position = 3
+                 COLOR 9
+                 LOCATE 16, 32: PRINT "Transfer Again"
+                 COLOR 8
+                 LOCATE 14, 38: PRINT "<"
+
+                 CASE 2
+                 position = 3
+                 COLOR 8
+                 LOCATE 14, 40: PRINT ">"
+                 COLOR 9
+                 LOCATE 16, 32: PRINT "Transfer Again"
+                 END SELECT
+
+        CASE CHR$(left)
+                 SELECT CASE position
+                 CASE 2
+                 position = 1
+                 COLOR 8
+                 LOCATE 14, 40: PRINT ">"
+                 COLOR 9
+                 LOCATE 14, 38: PRINT "<"
+                 CASE ELSE
+                 BEEP
+                 END SELECT
+
+        CASE CHR$(right)
+                 SELECT CASE position
+                 CASE 1
+                 position = 2
+                 COLOR 9
+                 LOCATE 14, 40: PRINT ">"    '   <(1)   (2)>
+                 COLOR 8                     '       (3) Transfer Again
+                 LOCATE 14, 38: PRINT "<"    '       (4) Finished
+                 END SELECT
+        CASE CHR$(enter)
+                SELECT CASE position
+                 CASE 1
+                 IF menleft2 > 0 THEN
+                 IF place1 < 5 THEN
+                 homearmy(place1, currentplayer) = 1 + homearmy(place1, currentplayer)
+                 ELSE
+                 soldiers(currentplayer) = 1 + soldiers(currentplayer)
+                 END IF
+                 IF place2 < 5 THEN
+                 homearmy(place2, currentplayer) = homearmy(place2, currentplayer) - 1
+                 ELSE
+                 soldiers(currentplayer) = soldiers(currentplayer) - 1
+                 END IF
+                 ELSE
+                 BEEP
+                 END IF
+                CASE 2
+                 IF menleft1 > 0 THEN
+                 IF place1 < 5 THEN
+                 homearmy(place1, currentplayer) = homearmy(place1, currentplayer) - 1
+                 ELSE
+                 soldiers(currentplayer) = soldiers(currentplayer) - 1
+                 END IF
+                 IF place2 < 5 THEN
+                 homearmy(place2, currentplayer) = homearmy(place2, currentplayer) + 1
+                 ELSE
+                 soldiers(currentplayer) = soldiers(currentplayer) + 1
+                 END IF
+                 ELSE
+                 BEEP
+                 END IF
+                CASE 3
+                 skipit = 999
+                 CALL TransferMen(scenario, skipit, soldiers!, homearmy!, currentplayer!, xposcastle, yposcastle, xposarmy, yposarmy, playerscastles)
+                CASE 4
+                skipit = 0
+                EXIT DO
+       
+        END SELECT
+               
+        CASE ELSE
+                BEEP
+        END SELECT
+ 
+LOCATE 1, 1: PRINT "Position="; position
+
+LOOP
+
+END SUB
+
+SUB wingame (names$, currentplayer, playerscastles)
+CLS
+COLOR currentcolor(currentplayer, playerscastles)
+LOCATE 15, 10: PRINT "Until a beter ending is made, you should"
+LOCATE 16, 10: PRINT "   be satisfied with the fact that"
+LOCATE 17, 17: PRINT names$(currentplayer)
+LOCATE 18, 10: PRINT "      kicked some major butt !!"
+END SUB
+

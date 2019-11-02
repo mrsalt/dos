@@ -1,0 +1,22 @@
+DIM SHARED sentinent(5)
+DIM SHARED startposx(5)
+DIM SHARED startposy(5)
+DIM SHARED playerscastles(5)
+DIM SHARED names$(5)
+DIM SHARED homearmy(4, 5)
+DIM SHARED topscroll(1060)
+DIM SHARED numofcastles(5)
+DIM SHARED soldiers(5)
+DIM SHARED knights(5)
+DIM SHARED catapults(5)
+DIM SHARED gold(5)
+DIM SHARED land(players)
+DIM SHARED skillevel(5)
+DIM SHARED xposcastle(4, 5)  ' #4 is the home castle
+DIM SHARED yposcastle(4, 5)  ' #4 is the home castle
+DIM SHARED landposition(1 TO 32, 1 TO 24)
+DIM SHARED comland(1 TO 32, 1 TO 24)
+DIM SHARED xposarmy(5)
+DIM SHARED yposarmy(5)
+DIM SHARED movement(5)
+
