@@ -2,7 +2,7 @@ SCREEN 12 'unfortunately, it will not make it all the way across
 DATA 68,68,71
 DATA 25,56,34
 DATA 43,29,22
-DATA 79,63,41  
+DATA 79,63,41 
 
 DATA 19,44,89
 DATA 21,47,94
@@ -29,7 +29,7 @@ NEXT i
 
 a! = TIMER
 DIM byte AS STRING * 1
-OPEN "c:\mark\worldmap.dat" FOR BINARY AS #1
+OPEN "c:\qb45\pict13\plds\worldmap.dat" FOR BINARY AS #1
 
 
 FOR i = 0 TO 48 * 16
