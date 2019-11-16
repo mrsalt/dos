@@ -3,8 +3,8 @@ DECLARE SUB mouseshow ()
 DECLARE SUB mousestatus (lb%, rb%, zx%, zy%)
 DECLARE SUB MouseDriver (ax%, bx%, cx%, dx%)
 DECLARE FUNCTION MouseInit% ()
-OPEN "map.dat" FOR BINARY AS #1
-OPEN "worldmap.dat" FOR BINARY AS #2
+OPEN "c:\mark\map.dat" FOR BINARY AS #1
+OPEN "c:\mark\worldmap.dat" FOR BINARY AS #2
 DIM wholescreen(16001) AS LONG
 
 DIM SHARED mouse$

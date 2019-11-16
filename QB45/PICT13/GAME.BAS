@@ -1,6 +1,7 @@
+DECLARE SUB showarea (xscreen!, yscreen!)
 DECLARE SUB joyinit ()
 DECLARE SUB joystatus (x%, y%, choice$)
-DECLARE SUB eraseplain (zx%, zy%, byteposition&, currentscreen%())
+DECLARE SUB eraseplain (zx%, zy%, BYTEPOSITION&, currentscreen%())
 DECLARE SUB caves (zx%, zy%, currentscreen%(), xscreen!, yscreen!)
 DECLARE SUB forestdraw (zx%, zy%, currentscreen%(), xscreen!, yscreen!)
 DECLARE SUB DrawRivAndRoads (squaretype%, xscreen!, yscreen!, zx%, zy%, currentscreen%())
@@ -25,14 +26,13 @@ DECLARE SUB openpalette (pal&(), currentpalette%)
 DECLARE SUB GetData (xscreen, yscreen, currentscreen%(), byte$)
 CLS
 CONST xscreenmax = 48, yscreenmax = 48, maxpalettes = 2
-CONST plds = 121' number of pld files
+CONST plds = 148' number of pld files
 CONST downleft = 1, downright = 3, upright = 9, upleft = 7
 CONST up = 8, down = 2, left = 4, right = 6
 CONST yes = -1, no = 1
 CONST DP% = 2 ' for decimal place, used in the rounding function
-CONST mapfound$ = "worldmap.dat"
+CONST mapfound$ = "c:\qb45\pict13\plds\worldmap.dat"
 CONST pals = 6
-
 DEFINT A-Z
 '$DYNAMIC
 DIM xscreen AS SINGLE, yscreen AS SINGLE, xb AS SINGLE, yb AS SINGLE
@@ -42,6 +42,9 @@ DIM pal(255, pals) AS LONG 'maxpalettes different palettes
 DIM wholescreen(16001) AS LONG
 DIM filename$(plds)
 DIM pieces(3, 2)
+DIM SHARED piece(plds)
+DIM SHARED opiece(plds)
+
 
 INPUT "Where are the data files"; where$
 IF where$ <> "" THEN
@@ -60,13 +63,17 @@ yscreen = 0      '   30     possible
                  '
 ' when the xscreen becomes > (xscreen - 1) then it starts to wrap around the other side
 DIM SHARED mouse$
+
+RESTORE mousedat
 mouse$ = SPACE$(57)
 FOR i% = 1 TO 57
-  READ A$
-  h$ = CHR$(VAL("&H" + A$))
+  READ a$
+  h$ = CHR$(VAL("&H" + a$))
   MID$(mouse$, i%, 1) = h$
 
 NEXT i%
+
+mousedat:
 DATA 55,89,E5,8B,5E,0C,8B,07,50,8B,5E,0A,8B,07,50,8B
 DATA 5E,08,8B,0F,8B,5E,06,8B,17,5B,58,1E,07,CD,33,53
 DATA 8B,5E,0C,89,07,58,8B,5E,0A,89,07,8B,5E,08,89,0F
@@ -90,18 +97,97 @@ LOCATE 1, 1: PRINT "Opening palettes..."
 CALL openpalette(pal&(), currentpalette)
 
     SCREEN 13
-    PALETTE USING pal&(0, 1)                      ' Change the palette to the first one
+    PALETTE USING pal&(0, 4)                      ' Change the palette to the first one
                  'starting with first color, the first palette
-    currentpalette = 1
+    currentpalette = 4
 LOCATE 1, 1: PRINT "Opening pictures...";
+
+DIM SHARED smallpics(1, plds) AS LONG
+
 RESTORE NAMES
 FOR i = 1 TO plds
+
+SELECT CASE i
+CASE 1: a& = -991244614
+CASE 2: a& = -993072454
+CASE 47: a& = -993072704
+CASE 48: a& = -825966359
+CASE 49: a& = -991506852
+CASE 50: a& = -826227482
+CASE 51: a& = -991640347
+CASE 52: a& = -993729052
+CASE 3, 11, 18: a& = -356861254
+CASE 4: a& = -1162155334
+CASE 5: a& = -356861254
+CASE 6: a& = -1159021894
+CASE 7, 12, 15: a& = -340071750
+CASE 8, 9, 16: a& = -336938310
+CASE 10, 13, 14, 17: a& = -336926022
+CASE 23, 30: a& = -826623302
+CASE 19, 24, 27: a& = -826618182
+CASE 20, 21, 28: a& = -825312582
+CASE 22, 25, 26, 29: a& = -825307462
+CASE 31: a& = -423565632
+CASE 32: a& = -1058619162
+CASE 33: a& = -437337920
+CASE 34: a& = -1061099803
+CASE 35: a& = -423566107
+CASE 36: a& = -1058489664
+CASE 37: a& = -454629952
+CASE 38: a& = -1161772824
+CASE 39: a& = -1058675228
+CASE 40: a& = -390020934
+CASE 41: a& = -454835995
+CASE 42: a& = -1061492800
+CASE 43: a& = -437590336
+CASE 44: a& = -354041626
+CASE 45: a& = -437982528
+CASE 46: a& = -356456987
+CASE 53 TO 68: a& = -943011633
+CASE 68: a& = -909587505
+CASE 69 TO 72: a& = -1162759501
+CASE 73, 74: a& = -1347637587
+CASE 75 TO 90, 97: a& = -623191079
+CASE 91: a& = -1145390406
+CASE 92: a& = -1145389737
+CASE 93: a& = -1128547652
+CASE 94: a& = -454892060
+CASE 95: a& = -471669277
+CASE 96: a& = -488315677
+CASE 98 TO 101, 106: a& = -657008937
+CASE 102: a& = -675621161
+CASE 103: a& = -673786182
+CASE 104: a& = -1160259368
+CASE 105: a& = -690432070
+CASE 131 TO 133: a& = -741813552
+CASE 134: a& = -623256871
+CASE 135: a& = -623584549
+CASE 136: a& = -1044006205
+CASE 137: a& = -1042693183
+CASE 138 TO 142: a& = -1027488829
+CASE 143 TO 145: a& = -440286014
+CASE 146 TO 148: a& = -1025129279
+END SELECT
+smallpics(0, i) = 131088
+smallpics(1, i) = a&
+
 READ k$
+IF k$ = "-1" THEN
+i = 127
+ELSE
 filename$(i) = k$
+END IF
 NEXT i
+
 CALL loadpics(filename$())
 OPEN mapfound$ FOR BINARY ACCESS READ WRITE AS #1
 CLS
+
+OPEN "lastpos.dat" FOR BINARY AS #2
+GET #2, , xscreen
+GET #2, , yscreen
+CLOSE #2
+
 CALL DrawScreen(xscreen, yscreen, currentscreen%(), direction, xb!, yb!)
    ' turn numlock off
    DEF SEG = 0
@@ -109,11 +195,12 @@ CALL DrawScreen(xscreen, yscreen, currentscreen%(), direction, xb!, yb!)
    DEF SEG
 
 
-A! = TIMER
+a! = TIMER
+
 
 mouseshow
 DIM box(3000) AS LONG
-squaretype = 56
+squaretype = 73
 f = 1
 
 DO
@@ -129,7 +216,7 @@ DO
                              CALL joystatus(x, y, choice$)
                              END IF
            
-            LOOP WHILE choice$ = "" AND zx% = q AND zy% = w AND (leftcheck = lb% AND (squaretype = 26 OR squaretype = 27) AND squaretype = os) AND rb% = NOT yes
+            LOOP WHILE choice$ = "" AND zx% = q AND zy% = w AND (leftcheck = lb% AND ((squaretype = 94 OR squaretype = 95 OR squaretype = 96) OR (squaretype = 91 OR squaretype = 92 OR squaretype = 93)) AND squaretype = os) AND rb% = NOT yes
        
             IF lb% = -1 THEN
                 
@@ -169,7 +256,7 @@ IF lb% = -1 THEN
                 erse = no
         ELSE
                    
-                    IF ((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%) AND squaretype > 43 AND squaretype < 56 AND check <> 0 AND (pieces(3, 1) <> (zx% \ 20 + 1) OR pieces(3, 2) <> (zy% \ 20 + 1)) THEN  'SHOREpiece
+                    IF ((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%) AND squaretype > 30 AND squaretype < 43 AND check <> 0 AND (pieces(3, 1) <> (zx% \ 20 + 1) OR pieces(3, 2) <> (zy% \ 20 + 1)) THEN  'SHOREpiece
                                 mousehide
                                 pieces(1, 1) = pieces(2, 1)
                                 pieces(1, 2) = pieces(2, 2)
@@ -182,31 +269,32 @@ IF lb% = -1 THEN
                                 ox% = (zx% \ 20): oy% = (zy% \ 20)
                     ELSE
                                
-                                IF (squaretype = 68) THEN
+                                IF (squaretype = 131) THEN
                                            
                                             mousehide
                                             CALL caves(zx%, zy%, currentscreen%(), xscreen!, yscreen!)
-                                            CALL mountainfix(xscreen, yscreen, currentscreen%())
+                                           
+                                            'CALL mountainfix(xscreen, yscreen, currentscreen%())
                                             ox% = (zx% \ 20): oy% = (zy% \ 20)
                                             mouseshow
                                 END IF
                                
-                                IF (((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%) OR os <> 59) AND (squaretype = 59) THEN
+                                IF (((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%) OR os <> 72) AND (squaretype = 72) THEN
                                             mousehide
                                             CALL forestdraw(zx%, zy%, currentscreen%(), xscreen!, yscreen!)
                                             ox% = (zx% \ 20): oy% = (zy% \ 20)
-                                            os = 59
+                                            os = 72
                                             mouseshow
                                 END IF
                                
-                                IF (squaretype = 115 OR squaretype = 116) AND (((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%) OR lastaction = 0) THEN
+                                IF (squaretype = 30 OR squaretype = 18) AND (((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%) OR lastaction = 0) THEN
                                 'reassign the four pieces around, then change the one in the middle
                                 mousehide
                                 CALL DrawRivAndRoads(squaretype, xscreen!, yscreen!, zx%, zy%, currentscreen%())
                                 ox% = (zx% \ 20): oy% = (zy% \ 20)
                                 mouseshow
                                 lastaction = 1
-                                ELSEIF ((((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%)) OR (squaretype <> os OR rb% = -1)) AND (squaretype <> 115 AND squaretype <> 116) THEN
+                                ELSEIF ((((zx% \ 20) <> ox% OR (zy% \ 20) <> oy%)) OR (squaretype <> os OR rb% = -1)) AND (squaretype <> 30 AND squaretype <> 18) THEN
                                            
                                             mousehide
                                             
@@ -214,16 +302,16 @@ IF lb% = -1 THEN
                                             xfig! = xscreen + (zx% \ 20) / 16
                                             IF xscreen + (zx% \ 20) / 16 >= xscreenmax THEN xfig! = xscreen + (zx% \ 20) / 16 - xscreenmax
                                             IF yscreen + (zy% \ 20) / 10 >= yscreenmax THEN yfig! = yscreen + (zy% \ 20) / 10 - yscreenmax
-                                            byteposition& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax)
+                                            BYTEPOSITION& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax)
                                             currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1) = squaretype
                                             byte$ = CHR$(squaretype)
-                                            PUT #1, byteposition& + 1, byte$
+                                            PUT #1, BYTEPOSITION& + 1, byte$
                                             PUT ((zx% \ 20) * 20, (zy% \ 20) * 20), picture&(0, squaretype), PSET
                                             ox% = (zx% \ 20): oy% = (zy% \ 20)
                                             os = squaretype
-                                            IF erse = yes THEN CALL eraseplain(zx%, zy%, byteposition&, currentscreen())
+                                            IF erse = yes THEN CALL eraseplain(zx%, zy%, BYTEPOSITION&, currentscreen())
 
-                                            IF (squaretype = 26 OR (squaretype > 116 AND squaretype < 121) OR squaretype = 118 OR squaretype = 27) AND rb% = yes AND holddown = yes THEN
+                                            IF (squaretype > 90 AND squaretype < 97) AND rb% = yes AND holddown = yes THEN
                                                         IF zx% \ 20 < startx% \ 20 THEN
                                                         si = (zx% \ 20) + 1
                                                         ei = (startx% \ 20) + 1
@@ -246,9 +334,9 @@ IF lb% = -1 THEN
                                                                     xfig! = xscreen + (i - 1) / 16
                                                                     IF xscreen + (i - 1) / 16 >= xscreenmax THEN xfig! = xscreen + (i - 1) / 16 - xscreenmax
                                                                     IF yscreen + (j - 1) / 10 >= yscreenmax THEN yfig! = yscreen + (j - 1) / 10 - yscreenmax
-                                                                    byteposition& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax)
+                                                                    BYTEPOSITION& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax)
                                                                     byte$ = CHR$(squaretype)
-                                                                    PUT #1, byteposition& + 1, byte$
+                                                                    PUT #1, BYTEPOSITION& + 1, byte$
                                                                     PUT ((i - 1) * 20, (j - 1) * 20), picture&(0, squaretype), PSET
                                                         NEXT
                                                         NEXT
@@ -259,7 +347,7 @@ IF lb% = -1 THEN
                                 END IF
                     END IF
        
-                    IF check = 0 AND squaretype > 43 AND squaretype < 56 AND (pieces(f, 1) <> zx% \ 20 + 1 OR pieces(f, 2) <> zy% \ 20 + 1) THEN 'if check = 1 then the mouse is being dragged
+                    IF check = 0 AND squaretype > 30 AND squaretype < 43 AND (pieces(f, 1) <> zx% \ 20 + 1 OR pieces(f, 2) <> zy% \ 20 + 1) THEN 'if check = 1 then the mouse is being dragged
                                 f = f + 1
                                 'IF zx% \ 20 < 1 OR zx% \ 20 > 14 THEN
                                 '            f = 3
@@ -444,19 +532,28 @@ ELSE
                                 PRINT "XScreen"; xscreen
                                 PRINT "YScreen"; yscreen
                                 PRINT "Type:"; currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1)
+                        CASE "`"
+                             CALL showarea(xscreen!, yscreen!)
+                              DO
+                              CALL mousestatus(lb%, rb%, zx%, zy%)
+                              IF lb% = -1 OR rb% = -1 THEN EXIT DO
+                              LOOP WHILE INKEY$ = ""
+                              choice$ = "c"
+                              
                         CASE "s"
                              currentpalette = currentpalette + 1
                              IF currentpalette > pals THEN currentpalette = 1
                              PALETTE USING pal&(0, currentpalette)
-                        CASE "c": squaretype = 68: erse = no
-                        CASE "h": squaretype = 21: erse = no
-                        CASE "r": squaretype = 115: erse = no
-                        CASE "R": squaretype = 116: erse = no
-                        CASE "f": squaretype = 59: erse = no
-                        CASE "p": squaretype = 27: erse = no
-                        CASE "o": squaretype = 26: erse = no
-                        CASE "e": squaretype = 27: erse = yes
-                        CASE "t": squaretype = 57: erse = no
+                        CASE "v": squaretype = 131: erse = no
+                        CASE "h": squaretype = 68: erse = no
+                        CASE "r": squaretype = 30: erse = no
+                        CASE "R": squaretype = 18: erse = no
+                        CASE "f": squaretype = 72: erse = no
+                        CASE "p": squaretype = 91: erse = no
+                        CASE "o": squaretype = 94: erse = no
+                        CASE "e": squaretype = 91: erse = yes
+                        CASE "t": squaretype = 74: erse = no
+                        CASE "T": squaretype = 73: erse = no
                         CASE "m"
                                         mousehide
                                         GET (5 * 8 - 1, 11 * 8 - 1)-(30 * 8 + 1, 12 * 8 + 1), box(0)
@@ -509,6 +606,13 @@ ELSE
                                     i = i + 1
                                     LOOP
                                     NEXT
+                                            
+                                             OPEN "lastpos.dat" FOR BINARY AS #2
+                                             PUT #2, , xscreen
+                                             PUT #2, , yscreen
+                                             CLOSE #2
+                                             CLOSE #1
+                                   
                                     END
                         END IF
             END IF
@@ -531,149 +635,327 @@ RETURN
 
 NAMES:
 DATA "BRIDGE1.PLD"
+' # 1
 DATA "BRIDGE2.PLD"
-DATA "FOREST1.PLD"
-DATA "FOREST2.PLD"
-DATA "FOREST3.PLD"
-DATA "MOUNTAN1.PLD"
-DATA "MOUNTAN2.PLD"
-DATA "MOUNTAN3.PLD"
-DATA "MOUNTAN4.PLD"
-DATA "MOUNTAN5.PLD"
-DATA "MOUNTAN6.PLD"
-DATA "MOUNTAN7.PLD"
-DATA "MOUNTAN8.PLD"
-DATA "MOUNTAN9.PLD"
-DATA "MOUNTA10.PLD"
-DATA "MOUNTA11.PLD"
-DATA "MOUNTA12.PLD"
-DATA "MOUNTA13.PLD"
-DATA "MOUNTA14.PLD"
-DATA "MOUNTA15.PLD"
-DATA "MOUNTA16.PLD"
-DATA "MOUTH1.PLD"
-DATA "MOUTH2.PLD"
-DATA "MOUTH3.PLD"
-DATA "MOUTH4.PLD"
-DATA "OCEAN1.PLD"
-DATA "PLAINS1.PLD"
-DATA "RIVER1.PLD"
-DATA "RIVER2.PLD"
-DATA "RIVER3.PLD"
-DATA "RIVER4.PLD"
-DATA "RIVER5.PLD"
-DATA "RIVER6.PLD"
-DATA "RIVJOIN1.PLD"
-DATA "RIVJOIN2.PLD"
-DATA "RIVJOIN3.PLD"
-DATA "RIVJOIN4.PLD"
-DATA "ROAD1.PLD"
-DATA "ROAD2.PLD"
-DATA "ROAD3.PLD"
-DATA "ROAD4.PLD"
-DATA "ROAD5.PLD"
-DATA "ROAD6.PLD"
-DATA "SHORE1.PLD"
-DATA "SHORE2.PLD"
-DATA "SHORE3.PLD"
-DATA "SHORE4.PLD"
-DATA "SHORE5.PLD"
-DATA "SHORE6.PLD"
-DATA "SHORE7.PLD"
-DATA "SHORE8.PLD"
-DATA "SHORE9.PLD"
-DATA "SHORE10.PLD"
-DATA "SHORE11.PLD"
-DATA "SHORE12.PLD"
-DATA "TREES1.PLD"
-DATA "TREES2.PLD"
-DATA "HUT1.PLD"
-DATA "FOREST4.PLD"
-DATA "RIVBEGN1.PLD"
+' # 2
 DATA "RIVBEGN2.PLD"
-DATA "RIVBEGN3.PLD"
+' # 3
 DATA "RIVBEGN4.PLD"
-DATA "RODJOIN1.PLD"
-DATA "RODJOIN2.PLD"
-DATA "RODJOIN3.PLD"
-DATA "RODJOIN4.PLD"
-DATA "CAVE1.PLD"
-DATA "CAVE2.PLD"
-DATA "CAVE3.PLD"
-DATA "HARBOR1.PLD"
-DATA "HARBOR2.PLD"
-DATA "HARBOR3.PLD"
-DATA "DESERT1.PLD"
-DATA "DESERT2.PLD"
-DATA "DESERT3.PLD"
-DATA "DESERT4.PLD"
-DATA "DESERT5.PLD"
-DATA "DESERT6.PLD"
-DATA "DESERT7.PLD"
-DATA "DESERT8.PLD"
-DATA "DESERT9.PLD"
-DATA "WALL1.PLD"
-DATA "WALL2.PLD"
-DATA "WALL3.PLD"
-DATA "WALL4.PLD"
-DATA "WALL5.PLD"
-DATA "WALL6.PLD"
-DATA "WALL7.PLD"
-DATA "WALL8.PLD"
-DATA "WALL9.PLD"
-DATA "WALL10.PLD"
-DATA "WALL11.PLD"
-DATA "WALL12.PLD"
-DATA "WALL13.PLD"
-DATA "WALL14.PLD"
-DATA "WALL15.PLD"
-DATA "WALL16.PLD"
-'98
-DATA "TOWN1.PLD"
-DATA "TOWN2.PLD"
-DATA "TOWN3.PLD"
-DATA "TOWN4.PLD"
-'102
-DATA "BRIDGE3.PLD"
-DATA "BRIDGE4.PLD"
-DATA "BRIDGE5.PLD"
-DATA "BRIDGE6.PLD"
-DATA "BRIDGE7.PLD"
-DATA "BRIDGE8.PLD"
-'108
-DATA "RODJOIN5.PLD"
+' # 4
+DATA "RIVBEGN1.PLD"
+' # 5
+DATA "RIVBEGN3.PLD"
+' # 6
+DATA "RIVER6.PLD"
+' # 7
+DATA "RIVER1.PLD"
+' # 8
+DATA "RIVER3.PLD"
+' # 9
+DATA "RIVER2.PLD"
+' # 10
+DATA "RIVER5.PLD"
+' # 11
+DATA "RIVER4.PLD"
+' # 12
+DATA "RIVJOIN3.PLD"
+' # 13
+DATA "RIVJOIN2.PLD"
+' # 14
+DATA "RIVJOIN4.PLD"
+' # 15
+DATA "RIVJOIN1.PLD"
+' # 16
 DATA "RIVJOIN5.PLD"
-DATA "CASTLE1.PLD"
-DATA "CASTLE2.PLD"
-DATA "CASTLE3.PLD"
-DATA "CASTLE4.PLD"
-'114
-DATA "ROAD7.PLD"
+' # 17
 DATA "RIVER7.PLD"
-'116
+' # 18
+DATA "ROAD1.PLD"
+' # 19
+DATA "ROAD2.PLD"
+' # 20
+DATA "ROAD3.PLD"
+' # 21
+DATA "ROAD4.PLD"
+' # 22
+DATA "ROAD5.PLD"
+' # 23
+DATA "ROAD6.PLD"
+' # 24
+DATA "RODJOIN1.PLD"
+' # 25
+DATA "RODJOIN2.PLD"
+' # 26
+DATA "RODJOIN3.PLD"
+' # 27
+DATA "RODJOIN4.PLD"
+' # 28
+DATA "RODJOIN5.PLD"
+' # 29
+DATA "ROAD7.PLD"
+' # 30
+DATA "SHORE3.PLD"
+' # 31
+DATA "SHORE4.PLD"
+' # 32
+DATA "SHORE1.PLD"
+' # 33
+DATA "SHORE2.PLD"
+' # 34
+DATA "SHORE10.PLD"
+' # 35
+DATA "SHORE8.PLD"
+' # 36
+DATA "SHORE9.PLD"
+' # 37
+DATA "SHORE5.PLD"
+' # 38
+DATA "SHORE11.PLD"
+' # 39
+DATA "SHORE7.PLD"
+' # 40
+DATA "SHORE12.PLD"
+' # 41
+DATA "SHORE6.PLD"
+' # 42
+DATA "MOUTH1.PLD"
+' # 43
+DATA "MOUTH2.PLD"
+' # 44
+DATA "MOUTH4.PLD"
+' # 45
+DATA "MOUTH3.PLD"
+' # 46
+DATA "BRIDGE3.PLD"
+' # 47
+DATA "BRIDGE4.PLD"
+' # 48
+DATA "BRIDGE6.PLD"
+' # 49
+DATA "BRIDGE7.PLD"
+' # 50
+DATA "BRIDGE8.PLD"
+' # 51
+DATA "BRIDGE5.PLD"
+' # 52
+DATA "MOUNTAN1.PLD"
+' # 53
+DATA "MOUNTAN2.PLD"
+' # 54
+DATA "MOUNTAN3.PLD"
+' # 55
+DATA "MOUNTAN4.PLD"
+' # 56
+DATA "MOUNTAN5.PLD"
+' # 57
+DATA "MOUNTAN6.PLD"
+' # 58
+DATA "MOUNTAN7.PLD"
+' # 59
+DATA "MOUNTAN8.PLD"
+' # 60
+DATA "MOUNTAN9.PLD"
+' # 61
+DATA "MOUNTA10.PLD"
+' # 62
+DATA "MOUNTA11.PLD"
+' # 63
+DATA "MOUNTA12.PLD"
+' # 64
+DATA "MOUNTA13.PLD"
+' # 65
+DATA "MOUNTA14.PLD"
+' # 66
+DATA "MOUNTA15.PLD"
+' # 67
+DATA "MOUNTA16.PLD"
+' # 68
+DATA "FOREST2.PLD"
+' # 69
+DATA "FOREST1.PLD"
+' # 70
+DATA "FOREST3.PLD"
+' # 71
+DATA "FOREST4.PLD"
+' # 72
+DATA "TREES1.PLD"
+' # 73
+DATA "TREES2.PLD"
+' # 74
+DATA "WALL1.PLD"
+' # 75
+DATA "WALL2.PLD"
+' # 76
+DATA "WALL3.PLD"
+' # 77
+DATA "WALL4.PLD"
+' # 78
+DATA "WALL5.PLD"
+' # 79
+DATA "WALL6.PLD"
+' # 80
+DATA "WALL7.PLD"
+' # 81
+DATA "WALL8.PLD"
+' # 82
+DATA "WALL9.PLD"
+' # 83
+DATA "WALL10.PLD"
+' # 84
+DATA "WALL11.PLD"
+' # 85
+DATA "WALL12.PLD"
+' # 86
+DATA "WALL13.PLD"
+' # 87
+DATA "WALL14.PLD"
+' # 88
+DATA "WALL15.PLD"
+' # 89
+DATA "WALL16.PLD"
+' # 90
+DATA "PLAINS1.PLD"
+' # 91
 DATA "PLAINS2.PLD"
+' # 92
 DATA "PLAINS3.PLD"
+' # 93
+DATA "OCEAN1.PLD"
+' # 94
 DATA "OCEAN2.PLD"
+' # 95
 DATA "OCEAN3.PLD"
+' # 96
 DATA "BOULDER.PLD"
+' # 97
+DATA "DESERT8.PLD"
+' # 98
+DATA "DESERT9.PLD"
+' # 99
+DATA "DESERT6.PLD"
+' # 100
+DATA "DESERT7.PLD"
+' # 101
+DATA "DESERT5.PLD"
+' # 102
+DATA "DESERT2.PLD"
+' # 103
+DATA "DESERT4.PLD"
+' # 104
+DATA "DESERT3.PLD"
+' # 105
+DATA "DESERT1.PLD"
+' # 106
+DATA "-1"
+' the next one is actually # 128
+DATA "HARBOR1.PLD"
+' # 241
+DATA "HARBOR2.PLD"
+' # 242
+DATA "HARBOR3.PLD"
+' # 243
+DATA "CAVE1.PLD"
+' # 244
+DATA "CAVE2.PLD"
+' # 245
+DATA "CAVE3.PLD"
+' # 246
+DATA "CASTLE1.PLD"
+' # 247
+DATA "CASTLE2.PLD"
+' # 248
+DATA "CASTLE3.PLD"
+' # 249
+DATA "CASTLE4.PLD"
+' # 250
+DATA "HUT1.PLD"
+' # 251
+DATA "TOWN1.PLD"
+' # 252
+DATA "TOWN2.PLD"
+' # 253
+DATA "TOWN3.PLD"
+' # 254
+DATA "TOWN4.PLD"
+' # 255
+
+
+DATA "HARBOR1.PLD"
+       
+DATA "HARBOR2.PLD"
+'
+DATA "HARBOR3.PLD"
+'
+DATA "HARBOR4.PLD"
+'
+DATA "HARBOR5.PLD"
+'
+DATA "HARBOR6.PLD"
+'
+
+neworder:
+DATA 1,2                    
+'road/river-bridge
+DATA 61,63,60,62            
+'rivbegin
+DATA 33,28,30,29,32,31,36,35,37,34,110,116
+'rivers
+DATA 38,39,40,41,42,43,64,65,66,67,109,115
+'road
+DATA 46,47,44,45,53,51,52,48,54,50,55,49
+'shores
+DATA 22,23,25,24,103,104,106,107,108,105
+'mouths/bridges
+DATA 6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
+'mountains                                                                                                      2,13,14,15,16,17,18,19,20,21      'mountains
+DATA 4,3,5,59,56,57         
+'forests/trees
+DATA 83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98
+'walls
+DATA 27,117,118             
+'plains
+DATA 26,119,120             
+'oceans
+DATA 121                    
+'boulder
+DATA 81,82,79,80            
+'deserts
+DATA 78,  75,  77,  76      
+'deserts
+DATA 74                     
+'deserts
+
+DATA -1
+
+'the next one would be # 241
+DATA 71,72,73             
+'harbors
+DATA 68,69,70               
+'caves
+DATA 111,112,113,114        
+'castle
+DATA 58                     
+'huts
+DATA 99,100,101,102
 
 REM $STATIC
 SUB caves (zx%, zy%, currentscreen%(), xscreen!, yscreen!)
 
-newp = 68
+newp = 131
 piece = currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1)
-IF piece = 18 THEN newp = 70
-IF piece = 70 THEN newp = 18
-IF piece = 16 THEN newp = 69
-IF piece = 69 THEN newp = 16
-IF piece = 68 THEN newp = 21
+IF piece = 65 THEN newp = 133
+IF piece = 133 THEN newp = 65
+IF piece = 63 THEN newp = 132
+IF piece = 132 THEN newp = 63
+IF piece = 131 THEN newp = 68
+
 yfig! = yscreen! + (zy% \ 20) / 10
 xfig! = xscreen! + (zx% \ 20) / 16
 IF xscreen! + (zx% \ 20) / 16 >= xscreenmax THEN xfig! = xscreen! + (zx% \ 20) / 16 - xscreenmax
 IF yscreen! + (zy% \ 20) / 10 >= yscreenmax THEN yfig! = yscreen! + (zy% \ 20) / 10 - yscreenmax
 byte$ = CHR$(newp)
-byteposition& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax) + 1
-PUT #1, byteposition&, byte$
+BYTEPOSITION& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax) + 1
+PUT #1, BYTEPOSITION&, byte$
 PUT ((zx% \ 20) * 20, (zy% \ 20) * 20), picture&(0, newp), PSET
 currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1) = newp
 END SUB
@@ -687,23 +969,23 @@ xfig! = xscreen! + (zx% \ 20) / 16
 IF xscreen! + (zx% \ 20) / 16 >= xscreenmax THEN xfig! = xscreen! + (zx% \ 20) / 16 - xscreenmax
 IF yscreen! + (zy% \ 20) / 10 >= yscreenmax THEN yfig! = yscreen! + (zy% \ 20) / 10 - yscreenmax
 
-byteposition& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax) + 1
+BYTEPOSITION& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax) + 1
 
-IF squaretype = 115 THEN ror = 1 ELSE ror = 2
+IF squaretype = 30 THEN ror = 1 ELSE ror = 2
 j1 = no: j2 = no: j3 = no: j4 = no
 
-GET #1, byteposition& - (16 * xscreenmax), byte$
+GET #1, BYTEPOSITION& - (16 * xscreenmax), byte$
 piece = ASC(byte$)
-IF (ror = 1 AND piece = 1 OR piece = 107 OR piece = 108 OR piece = 106) OR (ror = 2 AND piece = 2 OR piece = 24) THEN j1 = yes
-IF (ror = 2 AND piece > 27 AND piece < 38) OR (ror = 1 AND piece > 37 AND piece < 44) OR (ror = 2 AND piece > 59 AND piece < 64) OR (ror = 1 AND piece > 63 AND piece < 68) OR (ror = 1 AND piece = 115 OR ror = 2 AND piece = 116) OR (ror = 1 AND piece _
- = 109 OR ror = 2 AND piece = 110) THEN
+IF (ror = 1 AND piece = 1 OR piece = 50 OR piece = 51 OR piece = 49) OR (ror = 2 AND piece = 2 OR piece = 46) THEN j1 = yes
+IF (ror = 2 AND piece > 6 AND piece < 17) OR (ror = 1 AND piece > 18 AND piece < 25) OR (ror = 2 AND piece > 2 AND piece < 7) OR (ror = 1 AND piece > 24 AND piece < 29) OR (ror = 1 AND piece = 30 OR ror = 2 AND piece = 18) OR (ror = 1 AND piece = 29 _
+ OR ror = 2 AND piece = 17) THEN
 j1 = yes
 CALL getattributes(piece, x1, x2, y1, y2)
 IF y2 <> yes THEN
 y2 = yes
 CALL selectroadriver(x1, x2, y1, y2, ror, newp)
 byte$ = CHR$(newp)
-PUT #1, byteposition& - (16 * xscreenmax), byte$
+PUT #1, BYTEPOSITION& - (16 * xscreenmax), byte$
 n = ((zy% \ 20) - 1)
 IF n >= 0 THEN
 PUT ((zx% \ 20) * 20, n * 20), picture&(0, newp), PSET
@@ -712,18 +994,18 @@ END IF
 END IF
 END IF
 
-GET #1, byteposition& + (16 * xscreenmax), byte$
+GET #1, BYTEPOSITION& + (16 * xscreenmax), byte$
 piece = ASC(byte$)
-IF (ror = 1 AND piece = 1 OR piece = 106 OR piece = 108 OR piece = 107) OR (ror = 2 AND piece = 2 OR piece = 25) THEN j2 = yes
-IF (ror = 2 AND piece > 27 AND piece < 38) OR (ror = 1 AND piece > 37 AND piece < 44) OR (ror = 2 AND piece > 59 AND piece < 64) OR (ror = 1 AND piece > 63 AND piece < 68) OR (ror = 1 AND piece = 115 OR ror = 2 AND piece = 116) OR (ror = 1 AND piece _
- = 109 OR ror = 2 AND piece = 110) THEN
+IF (ror = 1 AND piece = 1 OR piece = 50 OR piece = 51 OR piece = 49) OR (ror = 2 AND piece = 2 OR piece = 45) THEN j2 = yes
+IF (ror = 2 AND piece > 6 AND piece < 17) OR (ror = 1 AND piece > 18 AND piece < 25) OR (ror = 2 AND piece > 2 AND piece < 7) OR (ror = 1 AND piece > 24 AND piece < 29) OR (ror = 1 AND piece = 30 OR ror = 2 AND piece = 18) OR (ror = 1 AND piece = 29 _
+ OR ror = 2 AND piece = 17) THEN
 j2 = yes
 CALL getattributes(piece, x1, x2, y1, y2)
 IF y1 <> yes THEN
 y1 = yes
 CALL selectroadriver(x1, x2, y1, y2, ror, newp)
 byte$ = CHR$(newp)
-PUT #1, byteposition& + (16 * xscreenmax), byte$
+PUT #1, BYTEPOSITION& + (16 * xscreenmax), byte$
 n = ((zy% \ 20) + 1)
 IF n < 10 THEN
 PUT ((zx% \ 20) * 20, n * 20), picture&(0, newp), PSET
@@ -732,18 +1014,18 @@ END IF
 END IF
 END IF
 
-GET #1, byteposition& - 1, byte$
+GET #1, BYTEPOSITION& - 1, byte$
 piece = ASC(byte$)
-IF (ror = 2 AND piece = 1) OR (ror = 1 AND (piece = 2 OR piece = 23 OR piece = 104 OR ((piece = 103 OR piece = 105) AND centerpiece = 26))) THEN j3 = yes
-IF (ror = 2 AND piece > 27 AND piece < 38) OR (ror = 1 AND piece > 37 AND piece < 44) OR (ror = 2 AND piece > 59 AND piece < 64) OR (ror = 1 AND piece > 63 AND piece < 68) OR (ror = 1 AND piece = 115 OR ror = 2 AND piece = 116) OR (ror = 1 AND piece _
- = 109 OR ror = 2 AND piece = 110) THEN
+IF (ror = 2 AND piece = 1) OR (ror = 1 AND (piece = 2 OR piece = 44 OR piece = 48 OR ((piece = 47 OR piece = 52) AND (centerpiece = 94 OR centerpiece = 95 OR centerpiece = 96)))) THEN j3 = yes
+IF (ror = 2 AND piece > 6 AND piece < 17) OR (ror = 1 AND piece > 18 AND piece < 25) OR (ror = 2 AND piece > 2 AND piece < 7) OR (ror = 1 AND piece > 24 AND piece < 29) OR (ror = 1 AND piece = 30 OR ror = 2 AND piece = 18) OR (ror = 1 AND piece = 29 _
+ OR ror = 2 AND piece = 17) THEN
 j3 = yes
 CALL getattributes(piece, x1, x2, y1, y2)
 IF x2 <> yes THEN
 x2 = yes
 CALL selectroadriver(x1, x2, y1, y2, ror, newp)
 byte$ = CHR$(newp)
-PUT #1, byteposition& - 1, byte$
+PUT #1, BYTEPOSITION& - 1, byte$
 n = ((zx% \ 20) - 1)
 IF n >= 0 THEN
 PUT (n * 20, (zy% \ 20) * 20), picture&(0, newp), PSET
@@ -752,18 +1034,18 @@ END IF
 END IF
 END IF
 
-GET #1, byteposition& + 1, byte$
+GET #1, BYTEPOSITION& + 1, byte$
 piece = ASC(byte$)
-IF (ror = 2 AND piece = 1) OR (ror = 1 AND (piece = 2 OR piece = 22 OR piece = 103 OR ((piece = 105 OR piece = 104) AND centerpiece = 26))) THEN j4 = yes
-IF (ror = 2 AND piece > 27 AND piece < 38) OR (ror = 1 AND piece > 37 AND piece < 44) OR (ror = 2 AND piece > 59 AND piece < 64) OR (ror = 1 AND piece > 63 AND piece < 68) OR (ror = 1 AND piece = 115 OR ror = 2 AND piece = 116) OR (ror = 1 AND piece _
- = 109 OR ror = 2 AND piece = 110) THEN
+IF (ror = 2 AND piece = 1) OR (ror = 1 AND (piece = 2 OR piece = 43 OR piece = 47 OR ((piece = 52 OR piece = 48) AND (centerpiece = 94 OR centerpiece = 95 OR centerpiece = 96)))) THEN j4 = yes
+IF (ror = 2 AND piece > 6 AND piece < 17) OR (ror = 1 AND piece > 18 AND piece < 25) OR (ror = 2 AND piece > 2 AND piece < 7) OR (ror = 1 AND piece > 24 AND piece < 29) OR (ror = 1 AND piece = 30 OR ror = 2 AND piece = 18) OR (ror = 1 AND piece = 29 _
+ OR ror = 2 AND piece = 17) THEN
 j4 = yes
 CALL getattributes(piece, x1, x2, y1, y2)
 IF x1 <> yes THEN
 x1 = yes
 CALL selectroadriver(x1, x2, y1, y2, ror, newp)
 byte$ = CHR$(newp)
-PUT #1, byteposition& + 1, byte$
+PUT #1, BYTEPOSITION& + 1, byte$
 n = ((zx% \ 20) + 1)
 IF n < 16 THEN
 PUT (n * 20, (zy% \ 20) * 20), picture&(0, newp), PSET
@@ -777,23 +1059,23 @@ newp = squaretype
 CALL selectroadriver(x1, x2, y1, y2, ror, newp)
 
 SELECT CASE centerpiece
-CASE 26
+CASE 94, 95, 96
 IF ror = 1 THEN
-IF j1 = yes OR j2 = yes THEN newp = 108
-IF j3 = yes OR j4 = yes THEN newp = 105
+IF j1 = yes OR j2 = yes THEN newp = 51
+IF j3 = yes OR j4 = yes THEN newp = 52
 END IF
-CASE 28: IF ror = 1 THEN newp = 1
-CASE 33: IF ror = 1 THEN newp = 2
-CASE 38: IF ror = 2 THEN newp = 1
-CASE 39: IF ror = 2 THEN newp = 2
-CASE 44: IF ror = 1 THEN newp = 106 ELSE newp = 25
-CASE 45: IF ror = 1 THEN newp = 107 ELSE newp = 24
-CASE 46: IF ror = 1 THEN newp = 103 ELSE newp = 22
-CASE 47: IF ror = 1 THEN newp = 104 ELSE newp = 23
+CASE 8: IF ror = 1 THEN newp = 1
+CASE 7: IF ror = 1 THEN newp = 2
+CASE 19: IF ror = 2 THEN newp = 1
+CASE 20: IF ror = 2 THEN newp = 2
+CASE 33: IF ror = 1 THEN newp = 49 ELSE newp = 45
+CASE 34: IF ror = 1 THEN newp = 50 ELSE newp = 46
+CASE 31: IF ror = 1 THEN newp = 47 ELSE newp = 43
+CASE 32: IF ror = 1 THEN newp = 48 ELSE newp = 44
 END SELECT
 
 byte$ = CHR$(newp)
-PUT #1, byteposition&, byte$
+PUT #1, BYTEPOSITION&, byte$
 PUT ((zx% \ 20) * 20, (zy% \ 20) * 20), picture&(0, newp), PSET
 currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1) = newp
 
@@ -805,6 +1087,10 @@ SUB DrawScreen (xscreen!, yscreen!, currentscreen%(), direction, xb!, yb!)
 '  xscreen! * 16 + yscreen! * 10
 
 'bytepositon right now is defining the upper left corner of a screen
+
+DIM horobyte AS STRING * 16
+DIM vertbyte AS STRING * 10
+
 
 IF (direction / 2 <> direction \ 2 AND (xscreen! > (xscreenmax - 1) OR yscreen! > (yscreenmax - 1))) OR (((direction = up OR direction = down) AND xscreen! > (xscreenmax - 1) OR ((direction = left OR direction = right) AND yscreen! > (yscreenmax - 1 _
 )))) THEN
@@ -822,7 +1108,7 @@ END IF
 IF yscreen! > (yscreenmax - 1) AND direction <> up THEN
 yfig! = (yscreen! - yscreenmax)
 END IF
-byteposition& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax)
+BYTEPOSITION& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax)
 
 
 SELECT CASE direction
@@ -834,13 +1120,13 @@ CASE downright
         NEXT
        
         FOR x = 1 TO 16
-        GET #1, byteposition& + (x - 1) + (9) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (x - 1) + (9) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT ((x - 1) * 20, 180), picture&(0, f), PSET
         currentscreen%(x, 10) = f
         NEXT
         FOR y = 1 TO 9
-        GET #1, byteposition& + (15) + (y - 1) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (15) + (y - 1) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT (300, (y - 1) * 20), picture&(0, f), PSET
         currentscreen%(16, y) = f
@@ -853,14 +1139,14 @@ CASE downleft
         NEXT
        
         FOR x = 2 TO 16
-        GET #1, byteposition& + (x - 1) + (9) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (x - 1) + (9) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT ((x - 1) * 20, 180), picture&(0, f), PSET
         currentscreen%(x, 10) = f
         NEXT
        
         FOR y = 1 TO 10
-        GET #1, byteposition& + (0) + (y - 1) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (0) + (y - 1) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT (0, (y - 1) * 20), picture&(0, f), PSET
         currentscreen%(1, y) = f
@@ -872,13 +1158,13 @@ CASE upright
         NEXT
         NEXT
         FOR x = 1 TO 16
-        GET #1, byteposition& + (x - 1) + (0) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (x - 1) + (0) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT ((x - 1) * 20, 0), picture&(0, f), PSET
         currentscreen%(x, 1) = f
         NEXT
         FOR y = 2 TO 10
-        GET #1, byteposition& + (15) + (y - 1) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (15) + (y - 1) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT (300, (y - 1) * 20), picture&(0, f), PSET
         currentscreen%(16, y) = f
@@ -893,13 +1179,13 @@ CASE upleft
         NEXT
         NEXT
         FOR x = 2 TO 16
-        GET #1, byteposition& + (x - 1) + (0) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (x - 1) + (0) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT ((x - 1) * 20, 0), picture&(0, f), PSET
         currentscreen%(x, 1) = f
         NEXT
         FOR y = 1 TO 10
-        GET #1, byteposition& + (0) + (y - 1) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (0) + (y - 1) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT (0, (y - 1) * 20), picture&(0, f), PSET
         currentscreen%(1, y) = f
@@ -907,19 +1193,22 @@ CASE upleft
 
 
 CASE up
+        
         FOR x = 1 TO 16
         FOR y = 2 TO 10
         currentscreen%(x, 12 - y) = currentscreen%(x, 11 - y)
         NEXT
         NEXT
        
+        GET #1, BYTEPOSITION& + 1, horobyte$
+       
         FOR x = 1 TO 16
-        GET #1, byteposition& + (x - 1) + (0) * (16 * xscreenmax) + 1, byte$
-        f = ASC(byte$)
+        f = ASC(MID$(horobyte$, x, 1))
         PUT ((x - 1) * 20, 0), picture&(0, f), PSET
         currentscreen%(x, 1) = f
         NEXT
 CASE down
+        
         FOR x = 1 TO 16
         FOR y = 1 TO 9
         currentscreen%(x, y) = currentscreen%(x, y + 1)
@@ -927,11 +1216,12 @@ CASE down
         NEXT
 
         FOR x = 1 TO 16
-        GET #1, byteposition& + (x - 1) + (9) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (x - 1) + (9) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT ((x - 1) * 20, 180), picture&(0, f), PSET
         currentscreen%(x, 10) = f
         NEXT
+
 CASE left
        
         FOR x = 2 TO 16
@@ -940,8 +1230,9 @@ CASE left
         NEXT
         NEXT
 
+       
         FOR y = 1 TO 10
-        GET #1, byteposition& + (0) + (y - 1) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (0) + (y - 1) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         PUT (0, (y - 1) * 20), picture&(0, f), PSET
         currentscreen%(1, y) = f
@@ -954,7 +1245,7 @@ CASE right
         NEXT
        
         FOR y = 1 TO 10
-        GET #1, byteposition& + (15) + (y - 1) * (16 * xscreenmax) + 1, byte$
+        GET #1, BYTEPOSITION& + (15) + (y - 1) * (16 * xscreenmax) + 1, byte$
         f = ASC(byte$)
         
         PUT (300, (y - 1) * 20), picture&(0, f), PSET
@@ -966,7 +1257,7 @@ CASE ELSE
 
 FOR n = 1 TO 10
 FOR m = 1 TO 16
-GET #1, byteposition& + (m - 1) + (n - 1) * (16 * xscreenmax) + 1, byte$
+GET #1, BYTEPOSITION& + (m - 1) + (n - 1) * (16 * xscreenmax) + 1, byte$
 f = ASC(byte$)
 IF f <> 0 THEN
 PUT ((m - 1) * 20, (n - 1) * 20), picture&(0, f), PSET
@@ -978,33 +1269,34 @@ END SELECT
 
 END SUB
 
-SUB eraseplain (zx%, zy%, byteposition&, currentscreen())
+SUB eraseplain (zx%, zy%, BYTEPOSITION&, currentscreen())
 
 
-GET #1, byteposition& - (16 * xscreenmax) + 1, byte$: top$ = byte$
-GET #1, byteposition& + (16 * xscreenmax) + 1, byte$: bottom$ = byte$
-GET #1, byteposition&, byte$: lft$ = byte$
-GET #1, byteposition& + 2, byte$: rgt$ = byte$
+GET #1, BYTEPOSITION& - (16 * xscreenmax) + 1, byte$: top$ = byte$
+GET #1, BYTEPOSITION& + (16 * xscreenmax) + 1, byte$: bottom$ = byte$
+GET #1, BYTEPOSITION&, byte$: lft$ = byte$
+GET #1, BYTEPOSITION& + 2, byte$: rgt$ = byte$
 top = ASC(top$)
 bottom = ASC(bottom$)
 lft = ASC(lft$)
 rgt = ASC(rgt$)
 
 ror = 0
-IF (top > 27 AND top < 38) OR (top > 59 AND top < 64) OR (top = 110) THEN ror = 2
-IF (top > 37 AND top < 44) OR (top > 63 AND top < 68) OR (top = 109) THEN ror = 1
-IF top = 24 THEN ror = 3
+IF (top > 6 AND top < 17) OR (top > 2 AND top < 7) OR (top = 17) THEN ror = 2
+IF (top > 18 AND top < 25) OR (top > 24 AND top < 29) OR (top = 29) THEN ror = 1
+
+IF top = 46 THEN ror = 3
 IF ror <> 0 THEN
      IF ror <> 3 THEN
      piece = top: CALL getattributes(piece, x1, x2, y1, y2)
      y2 = no
      CALL selectroadriver(x1, x2, y1, y2, ror, newp)
      ELSE
-     newp = 45
+     newp = 34
      END IF
      IF newp <> top THEN
           byte$ = CHR$(newp)
-          PUT #1, byteposition& - (16 * xscreenmax) + 1, byte$
+          PUT #1, BYTEPOSITION& - (16 * xscreenmax) + 1, byte$
           n = ((zy% \ 20) - 1)
        
           IF n >= 0 THEN
@@ -1013,22 +1305,23 @@ IF ror <> 0 THEN
           END IF
      END IF
 END IF
-
 ror = 0
-IF (bottom > 27 AND bottom < 38) OR (bottom > 59 AND bottom < 64) OR (bottom = 110) THEN ror = 2
-IF (bottom > 37 AND bottom < 44) OR (bottom > 63 AND bottom < 68) OR (bottom = 109) THEN ror = 1
-IF bottom = 25 THEN ror = 3
+
+IF (bottom > 6 AND bottom < 17) OR (bottom > 2 AND bottom < 7) OR (bottom = 17) THEN ror = 2
+IF (bottom > 18 AND bottom < 25) OR (bottom > 24 AND bottom < 29) OR (bottom = 29) THEN ror = 1
+
+IF bottom = 45 THEN ror = 3
 IF ror <> 0 THEN
      IF ror <> 3 THEN
      piece = bottom: CALL getattributes(piece, x1, x2, y1, y2)
      y1 = no
      CALL selectroadriver(x1, x2, y1, y2, ror, newp)
      ELSE
-     newp = 44
+     newp = 33
      END IF
      IF newp <> bottom THEN
           byte$ = CHR$(newp)
-          PUT #1, byteposition& + (16 * xscreenmax) + 1, byte$
+          PUT #1, BYTEPOSITION& + (16 * xscreenmax) + 1, byte$
           n = ((zy% \ 20) + 1)
         
           IF n < 10 THEN
@@ -1039,20 +1332,20 @@ IF ror <> 0 THEN
 END IF
 
 ror = 0
-IF (lft > 27 AND lft < 38) OR (lft > 59 AND lft < 64) OR (lft = 110) THEN ror = 2
-IF (lft > 37 AND lft < 44) OR (lft > 63 AND lft < 68) OR (lft = 109) THEN ror = 1
-IF lft = 23 THEN ror = 3
+IF (lft > 6 AND lft < 17) OR (lft > 2 AND lft < 7) OR (lft = 17) THEN ror = 2
+IF (lft > 18 AND lft < 25) OR (lft > 24 AND lft < 29) OR (lft = 29) THEN ror = 1
+IF lft = 44 THEN ror = 3
 IF ror <> 0 THEN
      IF ror <> 3 THEN
      piece = lft: CALL getattributes(piece, x1, x2, y1, y2)
      x2 = no
      CALL selectroadriver(x1, x2, y1, y2, ror, newp)
      ELSE
-     newp = 47
+     newp = 32
      END IF
      IF newp <> lft THEN
           byte$ = CHR$(newp)
-          PUT #1, byteposition&, byte$
+          PUT #1, BYTEPOSITION&, byte$
 
           n = ((zx% \ 20) - 1)
           IF n >= 0 THEN
@@ -1063,20 +1356,20 @@ IF ror <> 0 THEN
 END IF
 
 ror = 0
-IF (rgt > 27 AND rgt < 38) OR (rgt > 59 AND rgt < 64) OR (rgt = 110) THEN ror = 2
-IF (rgt > 37 AND rgt < 44) OR (rgt > 63 AND rgt < 68) OR (rgt = 109) THEN ror = 1
-IF rgt = 22 THEN ror = 3
+IF (rgt > 6 AND rgt < 17) OR (rgt > 2 AND rgt < 7) OR (rgt = 17) THEN ror = 2
+IF (rgt > 18 AND rgt < 25) OR (rgt > 24 AND rgt < 29) OR (rgt = 29) THEN ror = 1
+IF rgt = 43 THEN ror = 3
 IF ror <> 0 THEN
      IF ror <> 3 THEN
      piece = rgt: CALL getattributes(piece, x1, x2, y1, y2)
      x1 = no
      CALL selectroadriver(x1, x2, y1, y2, ror, newp)
      ELSE
-     newp = 46
+     newp = 31
      END IF
      IF newp <> rgt THEN
           byte$ = CHR$(newp)
-          PUT #1, byteposition& + 2, byte$
+          PUT #1, BYTEPOSITION& + 2, byte$
 
           n = ((zx% \ 20) + 1)
           IF n < 16 THEN
@@ -1086,11 +1379,11 @@ IF ror <> 0 THEN
      END IF
 END IF
 
-IF top = 3 OR top = 4 THEN
-IF top = 3 THEN newp = 5
-IF top = 4 THEN newp = 59
+IF top = 70 OR top = 69 THEN
+IF top = 70 THEN newp = 71
+IF top = 69 THEN newp = 72
           byte$ = CHR$(newp)
-          PUT #1, byteposition& - (16 * xscreenmax) + 1, byte$
+          PUT #1, BYTEPOSITION& - (16 * xscreenmax) + 1, byte$
           n = ((zy% \ 20) - 1)
       
           IF n >= 0 THEN
@@ -1098,11 +1391,11 @@ IF top = 4 THEN newp = 59
                currentscreen%(zx% \ 20 + 1, n + 1) = newp
           END IF
 END IF
-IF bottom = 3 OR bottom = 5 THEN
-IF bottom = 3 THEN newp = 4
-IF bottom = 5 THEN newp = 59
+IF bottom = 70 OR bottom = 71 THEN
+IF bottom = 70 THEN newp = 69
+IF bottom = 71 THEN newp = 72
           byte$ = CHR$(newp)
-          PUT #1, byteposition& + (16 * xscreenmax) + 1, byte$
+          PUT #1, BYTEPOSITION& + (16 * xscreenmax) + 1, byte$
           n = ((zy% \ 20) + 1)
      
           IF n < 10 THEN
@@ -1121,19 +1414,19 @@ xfig! = xscreen! + (zx% \ 20) / 16
 IF xscreen! + (zx% \ 20) / 16 >= xscreenmax THEN xfig! = xscreen! + (zx% \ 20) / 16 - xscreenmax
 IF yscreen! + (zy% \ 20) / 10 >= yscreenmax THEN yfig! = yscreen! + (zy% \ 20) / 10 - yscreenmax
 j1 = no: j2 = no
-byteposition& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax) + 1
+BYTEPOSITION& = xfig! * 16 + (yfig! * 10) * (16 * xscreenmax) + 1
 
-GET #1, byteposition& - 768, byte$
+GET #1, BYTEPOSITION& - 768, byte$
 piece = ASC(byte$)
-IF (piece > 2 AND piece < 6) OR piece = 59 THEN
+IF (piece > 68 AND piece < 73) THEN
             j1 = yes
             newp = 0
-            IF piece = 5 THEN newp = 3
-            IF piece = 59 THEN newp = 4
+            IF piece = 71 THEN newp = 70
+            IF piece = 72 THEN newp = 69
                                                           
             IF newp <> 0 THEN
                         byte$ = CHR$(newp)
-                        PUT #1, byteposition& - 768, byte$
+                        PUT #1, BYTEPOSITION& - 768, byte$
                                                           
                         n = ((zy% \ 20) - 1)
                         IF n >= 0 THEN
@@ -1144,17 +1437,17 @@ IF (piece > 2 AND piece < 6) OR piece = 59 THEN
             END IF
 END IF
                                   
-GET #1, byteposition& + 768, byte$
+GET #1, BYTEPOSITION& + 768, byte$
 piece = ASC(byte$)
-IF (piece > 2 AND piece < 6) OR piece = 59 THEN
+IF (piece > 68 AND piece < 73) THEN
             j2 = yes
             newp = 0
-            IF piece = 4 THEN newp = 3
-            IF piece = 59 THEN newp = 5
+            IF piece = 69 THEN newp = 70
+            IF piece = 72 THEN newp = 71
                                                          
             IF newp <> 0 THEN
                         byte$ = CHR$(newp)
-                        PUT #1, byteposition& + 768, byte$
+                        PUT #1, BYTEPOSITION& + 768, byte$
                                                          
                         n = ((zy% \ 20) + 1)
                         IF n < 10 THEN
@@ -1166,12 +1459,12 @@ IF (piece > 2 AND piece < 6) OR piece = 59 THEN
 END IF
 
 newp = 0
-IF j1 = yes AND j2 = yes THEN newp = 3
-IF j1 = yes AND j2 = no THEN newp = 5
-IF j1 = no AND j2 = yes THEN newp = 4
-IF j1 = no AND j2 = no THEN newp = 59
+IF j1 = no AND j2 = yes THEN newp = 69
+IF j1 = yes AND j2 = yes THEN newp = 70
+IF j1 = yes AND j2 = no THEN newp = 71
+IF j1 = no AND j2 = no THEN newp = 72
 byte$ = CHR$(newp)
-PUT #1, byteposition&, byte$
+PUT #1, BYTEPOSITION&, byte$
 
 PUT ((zx% \ 20) * 20, (zy% \ 20) * 20), picture&(0, newp), PSET
 currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1) = newp
@@ -1182,22 +1475,22 @@ END SUB
 SUB getattributes (piece, x1, x2, y1, y2)
 
 SELECT CASE piece
-CASE 109, 110, 1, 2: v = 1
-CASE 65, 35: v = 2
-CASE 67, 34: v = 3
-CASE 39, 28: v = 4
-CASE 64, 36: v = 5
-CASE 41, 29: v = 6
-CASE 40, 30: v = 7
-CASE 62: v = 8
-CASE 66, 37: v = 9
-CASE 43, 31: v = 10
-CASE 42, 32: v = 11
-CASE 60: v = 12
-CASE 38, 33: v = 13
-CASE 61: v = 14
-CASE 63: v = 15
-CASE 115, 116: v = 16
+CASE 29, 17, 1, 2: v = 1
+CASE 26, 14: v = 2
+CASE 28, 16: v = 3
+CASE 20, 8: v = 4
+CASE 25, 13: v = 5
+CASE 22, 20: v = 6
+CASE 21, 9: v = 7
+CASE 6: v = 8
+CASE 27, 15: v = 9
+CASE 24, 12: v = 10
+CASE 23, 11: v = 11
+CASE 5: v = 12
+CASE 19, 7: v = 13
+CASE 3: v = 14
+CASE 4: v = 15
+CASE 30, 18: v = 16
 END SELECT
 x1 = no: x2 = no: y1 = no: y2 = no
 
@@ -1281,6 +1574,8 @@ END SELECT
 END SUB
 
 SUB junk
+IF (rgt > 6 AND rgt < 17) OR (rgt > 2 AND rgt < 7) OR (rgt = 17) THEN ror = 2
+IF (rgt > 18 AND rgt < 25) OR (rgt > 24 AND rgt < 29) OR (rgt = 29) THEN ror = 1
 
 END SUB
 
@@ -1289,6 +1584,9 @@ SUB loadpics (filename$())
 
 num = 1
 FOR f = 1 TO plds
+
+IF f = 107 THEN f = 128
+
 LOCATE 2, 1: PRINT "Opening "; filename$(f); "     "
 LOCATE 3, 1: PRINT USING "###%"; CINT(f / plds * 100)
 OPEN filename$(f) FOR BINARY AS num
@@ -1301,36 +1599,15 @@ NEXT
 
 END SUB
 
-SUB makedata (currentscreen())
-'
-'  each squares byte position goes as follows:
-'  xscreen * 16 + yscreen * 10
-'
-byteposition& = (xscreen - 1) * 160 + (yscreen - 1) * (160 * xscreenmax)
-'bytepositon right now is defining the upper left corner of a screen
-n = 1
-m = 1
-
-DO
-
-PUT #1, byteposition& + (m - 1) + (n - 1) * 16, currentscreen(m, n)
-
-
-
-
-LOOP
-
-END SUB
-
 SUB mountainfix (xscreen, yscreen, currentscreen%())
 mousehide
 
 FOR i = 1 TO 16
 
 FOR j = 1 TO 10
-IF (currentscreen%(i, j) > 5 AND currentscreen%(i, j) < 22) THEN
+IF (currentscreen%(i, j) > 52 AND currentscreen%(i, j) < 69) THEN
        
-        t = no: B = no: l = no: r = no
+        t = no: b = no: l = no: r = no
        
         IF j = 1 THEN
                     yfi! = yscreen! + (j - 2) / 10: xfi! = xscreen! + (i - 1) / 16
@@ -1351,9 +1628,9 @@ IF (currentscreen%(i, j) > 5 AND currentscreen%(i, j) < 22) THEN
                     IF yfi! < 0 THEN yfi! = yscreenmax - (1 / 10)
                     IF xfi! < 0 THEN xfi! = xscreenmax - (1 / 16)
                     bytepos& = xfi! * 16 + (yfi! * 10) * (16 * xscreenmax) + 1
-                    GET #1, bytepos&, byte$: B = ASC(byte$)
+                    GET #1, bytepos&, byte$: b = ASC(byte$)
         ELSE
-        B = currentscreen%(i, j + 1)
+        b = currentscreen%(i, j + 1)
         END IF
 
         IF i = 1 THEN
@@ -1380,58 +1657,58 @@ IF (currentscreen%(i, j) > 5 AND currentscreen%(i, j) < 22) THEN
         r = currentscreen%(i + 1, j)
         END IF
        
-        IF (t > 5 AND t < 22) THEN
+        IF (t > 52 AND t < 69) THEN
         t = yes
         ELSE
         t = no
         END IF
-        IF (B > 5 AND B < 22) OR (B > 68 AND B < 71) THEN
-        B = yes
+        IF (b > 52 AND b < 69) OR (b > 131 AND b < 134) THEN
+        b = yes
         ELSE
-        B = no
+        b = no
         END IF
-        IF (l > 5 AND l < 22) OR (l = 70) THEN
+        IF (l > 52 AND l < 69) OR (l = 133) THEN
         l = yes
         ELSE
         l = no
         END IF
-        IF (r > 5 AND r < 22) OR (r = 70) THEN
+        IF (r > 52 AND r < 69) OR (r = 133) THEN
         r = yes
         ELSE
         r = no
         END IF
 
-        IF t = yes AND B = no THEN
-                IF l = yes AND r = no THEN kind = 7
-                IF r = yes AND l = no THEN kind = 8
-                IF l = no AND r = no THEN kind = 16
-                IF l = yes AND r = yes THEN kind = 18
+        IF t = yes AND b = no THEN
+                IF l = yes AND r = no THEN kind = 54
+                IF r = yes AND l = no THEN kind = 55
+                IF l = no AND r = no THEN kind = 63
+                IF l = yes AND r = yes THEN kind = 65
         END IF
 
-        IF B = yes AND t = no THEN
-                IF l = no AND r = yes THEN kind = 9
-                IF r = no AND l = yes THEN kind = 10
-                IF l = no AND r = no THEN kind = 14
-                IF l = yes AND r = yes THEN kind = 20
+        IF b = yes AND t = no THEN
+                IF l = no AND r = yes THEN kind = 56
+                IF r = no AND l = yes THEN kind = 57
+                IF l = no AND r = no THEN kind = 61
+                IF l = yes AND r = yes THEN kind = 67
         END IF
 
-        IF B = yes AND t = yes THEN
-                IF l = yes AND r = yes THEN kind = 6
-                IF r = no AND l = no THEN kind = 11
-                IF l = yes AND r = no THEN kind = 17
-                IF r = yes AND l = no THEN kind = 19
+        IF b = yes AND t = yes THEN
+                IF l = yes AND r = yes THEN kind = 53
+                IF r = no AND l = no THEN kind = 58
+                IF l = yes AND r = no THEN kind = 64
+                IF r = yes AND l = no THEN kind = 66
         END IF
 
-        IF B = no AND t = no THEN
-                IF l = yes AND r = yes THEN kind = 12
-                IF l = yes AND r = no THEN kind = 13
-                IF l = no AND r = yes THEN kind = 15
-                IF l = no AND r = no THEN kind = 21
+        IF b = no AND t = no THEN
+                IF l = yes AND r = yes THEN kind = 59
+                IF l = yes AND r = no THEN kind = 60
+                IF l = no AND r = yes THEN kind = 62
+                IF l = no AND r = no THEN kind = 68
         END IF
 
         byte$ = CHR$(kind)
-        byteposition& = xscreen * 16 + (yscreen * 10) * (16 * xscreenmax)
-        PUT #1, byteposition& + (i - 1) + (j - 1) * (16 * xscreenmax) + 1, byte$
+        BYTEPOSITION& = xscreen * 16 + (yscreen * 10) * (16 * xscreenmax)
+        PUT #1, BYTEPOSITION& + (i - 1) + (j - 1) * (16 * xscreenmax) + 1, byte$
 
         PUT ((i - 1) * 20, (j - 1) * 20), picture&(0, kind), PSET
         currentscreen%(i, j) = kind
@@ -1530,17 +1807,6 @@ SUB openpalette (pal&(), currentpalette)
 END SUB
 
 DEFSNG A-Z
-SUB putscreen (currentscreen%())
-
-FOR j = 1 TO 16
-FOR i = 1 TO 10
-f = currentscreen%(j, i)
-PUT ((x - 1) * 20, (y - 1) * 20), picture&(0, f), PSET
-NEXT i
-NEXT j
-
-END SUB
-
 FUNCTION round (DP, number!)
 IF INT(number! * 10 ^ DP) >= INT(number! * 10 ^ (DP - 1)) * 10 + 5 THEN
 round = (INT(number! * 10 ^ (DP - 1) + 1)) / (10 ^ (DP - 1))
@@ -1572,41 +1838,41 @@ IF x1 = no AND x2 = no AND y1 = no AND y2 = no THEN v = 16 ' 8
 SELECT CASE ror
 CASE 1
 SELECT CASE v
-CASE 1: newp = 109
-CASE 2: newp = 65
-CASE 3: newp = 67
-CASE 4: newp = 39
-CASE 5: newp = 64
-CASE 6: newp = 41
-CASE 7: newp = 40
-CASE 8: newp = 39
-CASE 9: newp = 66
-CASE 10: newp = 43
-CASE 11: newp = 42
-CASE 12: newp = 39
-CASE 13: newp = 38
-CASE 14: newp = 38
-CASE 15: newp = 38
-CASE 16: newp = 115
+CASE 1: newp = 29
+CASE 2: newp = 26
+CASE 3: newp = 28
+CASE 4: newp = 20
+CASE 5: newp = 25
+CASE 6: newp = 22
+CASE 7: newp = 21
+CASE 8: newp = 20
+CASE 9: newp = 27
+CASE 10: newp = 24
+CASE 11: newp = 23
+CASE 12: newp = 20
+CASE 13: newp = 19
+CASE 14: newp = 19
+CASE 15: newp = 19
+CASE 16: newp = 30
 END SELECT
 CASE 2
 SELECT CASE v
-CASE 1: newp = 110
-CASE 2: newp = 35
-CASE 3: newp = 34
-CASE 4: newp = 28
-CASE 5: newp = 36
-CASE 6: newp = 29
-CASE 7: newp = 30
-CASE 8: newp = 62
-CASE 9: newp = 37
-CASE 10: newp = 31
-CASE 11: newp = 32
-CASE 12: newp = 60
-CASE 13: newp = 33
-CASE 14: newp = 63
-CASE 15: newp = 61
-CASE 16: newp = 116
+CASE 1: newp = 17
+CASE 2: newp = 14
+CASE 3: newp = 16
+CASE 4: newp = 8
+CASE 5: newp = 13
+CASE 6: newp = 10
+CASE 7: newp = 9
+CASE 8: newp = 6
+CASE 9: newp = 15
+CASE 10: newp = 12
+CASE 11: newp = 11
+CASE 12: newp = 5
+CASE 13: newp = 7
+CASE 14: newp = 4
+CASE 15: newp = 3
+CASE 16: newp = 18
 END SELECT
 END SELECT
 END SUB
@@ -1614,18 +1880,18 @@ END SUB
 SUB setpieces (kind, xattrib, yattrib)
 xattrib = 0: yattrib = 0
 SELECT CASE kind
-CASE 44: yattrib = 1
-CASE 45: yattrib = 2
-CASE 46: xattrib = 1
-CASE 47: xattrib = 2
-CASE 48: xattrib = 2: yattrib = 2
-CASE 49: xattrib = 1: yattrib = 2
-CASE 50: xattrib = 1: yattrib = 1
-CASE 51: xattrib = 2: yattrib = 1
-CASE 52: xattrib = 1: yattrib = 1
-CASE 53: xattrib = 1: yattrib = 2
-CASE 54: xattrib = 2: yattrib = 2
-CASE 55: xattrib = 2: yattrib = 1
+CASE 33: yattrib = 1
+CASE 34: yattrib = 2
+CASE 31: xattrib = 1
+CASE 32: xattrib = 2
+CASE 38: xattrib = 2: yattrib = 2
+CASE 42: xattrib = 1: yattrib = 2
+CASE 40: xattrib = 1: yattrib = 1
+CASE 36: xattrib = 2: yattrib = 1
+CASE 37: xattrib = 1: yattrib = 1
+CASE 35: xattrib = 1: yattrib = 2
+CASE 39: xattrib = 2: yattrib = 2
+CASE 41: xattrib = 2: yattrib = 1
 END SELECT
 END SUB
 
@@ -1640,8 +1906,8 @@ vert = 2
 SELECT CASE ABS(xdir1 - xdir2)
 CASE 0'goes straight up
             SELECT CASE xattrib
-            CASE 1: kind = 46
-            CASE 2: kind = 47
+            CASE 1: kind = 31
+            CASE 2: kind = 32
             END SELECT
 CASE 1'goes across and up
            
@@ -1658,16 +1924,16 @@ CASE 1'goes across and up
                         CASE -1
                                    
                                     IF (xdir2 = -1 AND yattrib = 2 AND (xattrib <> 1 OR dir = 2)) OR (ydir1 = -1 AND xattrib = 2 AND (yattrib <> 1 OR dir = 0)) THEN
-                                    kind = 48
+                                    kind = 38
                                     ELSE
-                                    kind = 52
+                                    kind = 37
                                     END IF
                         CASE 1
                                    
                                     IF (ydir1 = 1 AND xattrib = 2 AND (yattrib <> 2 OR dir = 0)) OR (xdir2 = -1 AND yattrib = 1 AND (xattrib <> 1 OR dir = 2)) THEN
-                                    kind = 51
+                                    kind = 36
                                     ELSE
-                                    kind = 53
+                                    kind = 35
                                     END IF
                         END SELECT
             CASE 1
@@ -1678,36 +1944,77 @@ CASE 1'goes across and up
                         CASE -1
                                    
                                     IF (ydir1 = -1 AND xattrib = 1 AND (yattrib <> 1 OR dir = 0)) OR (xdir2 = 1 AND (yattrib = 2) AND (xattrib <> 2 OR dir = 2)) THEN
-                                    kind = 49
+                                    kind = 42
                                     ELSE
-                                    kind = 55
+                                    kind = 41
                                     END IF
                         CASE 1
                                    
                                     IF (ydir1 = 1 AND xattrib = 1 AND (yattrib <> 2 OR dir = 0)) OR (xdir2 = 1 AND yattrib = 1 AND (xattrib <> 2 OR dir = 2)) THEN
-                                    kind = 50
+                                    kind = 40
                                     ELSE
-                                    kind = 54
+                                    kind = 39
                                     END IF
                         END SELECT
             END SELECT
                                    
 CASE 2'goes straight across
             SELECT CASE yattrib
-            CASE 1: kind = 44
-            CASE 2: kind = 45
+            CASE 1: kind = 33
+            CASE 2: kind = 34
             END SELECT
 END SELECT
 IF kind <> 0 THEN
 CALL setpieces(kind, xattrib, yattrib)
 currentscreen(pieces(2, 1), pieces(2, 2)) = kind
 PUT ((pieces(2, 1) - 1) * 20, (pieces(2, 2) - 1) * 20), picture&(0, kind), PSET
-byteposition& = xscreen! * 16 + yscreen! * 10 * 16 * xscreenmax
-B$ = CHR$(kind)
-PUT #1, byteposition& + pieces(2, 1) - 1 + (pieces(2, 2) - 1) * 16 * xscreenmax + 1, B$
+BYTEPOSITION& = xscreen! * 16 + yscreen! * 10 * 16 * xscreenmax
+b$ = CHR$(kind)
+PUT #1, BYTEPOSITION& + pieces(2, 1) - 1 + (pieces(2, 2) - 1) * 16 * xscreenmax + 1, b$
 END IF
 END SUB
 
+DEFSNG A-Z
+SUB showarea (xscreen!, yscreen!)
+startx = (xscreen! - 4.5) * 16
+starty = (yscreen! - 4.5) * 10
+DIM across AS STRING * 160
+DIM lin(161) AS LONG
+
+DIM box(1) AS LONG
+mousehide
+CLS
+GET (0, 0)-(319, 1), lin&(0)
+
+
+
+lin&(0) = 133632
+
+
+a! = TIMER
+
+FOR i = 0 TO 99
+BYTEPOSITION& = startx + (starty + i) * 768
+GET #1, BYTEPOSITION&, across
+
+FOR j = 1 TO 160
+s = ASC(MID$(across, j, 1))
+'lin&(j) = smallpics&(1, s)
+PUT ((j - 1) * 2, i * 2), smallpics&(0, s), PSET
+
+NEXT
+
+'PUT (0, (i * 2)), lin&(0), PSET
+
+NEXT i
+b! = TIMER
+'PRINT b! - a!
+
+
+
+END SUB
+
+DEFINT A-Z
 SUB special (xscreen!, yscreen!, direction%, currentscreen%(), xb!, yb!)
   ' with downleft at the screen above 1,1, make note of yfig!
 DIM r AS SINGLE
