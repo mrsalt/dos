@@ -250,7 +250,7 @@ IF lb% = -1 THEN
                 GET (5 * 8 - 1, 11 * 8 - 1)-(30 * 8 + 1, 12 * 8 + 1), box(0)
                 LINE (39, 87)-(241, 97), 0, BF
                 LOCATE 12, 6: INPUT "Square to change to"; s
-                IF s > 0 AND s < plds + 1 THEN squaretype = s
+                IF s > 0 AND s <= plds THEN squaretype = s
                 PUT (5 * 8 - 1, 11 * 8 - 1), box(0), PSET
                 mouseshow
                 erse = no
@@ -532,14 +532,51 @@ ELSE
                                 PRINT "XScreen"; xscreen
                                 PRINT "YScreen"; yscreen
                                 PRINT "Type:"; currentscreen%(zx% \ 20 + 1, zy% \ 20 + 1)
+                        CASE "d"
+                              mousehide
+                              CLS
+                              c = 0
+                              FOR i = 0 TO 15
+                              FOR j = 0 TO 9
+                              c = c + 1
+                              IF c > 106 AND c < 128 THEN
+                             
+                              ELSE
+                              PUT (i * 20, j * 20), picture&(0, c), PSET
+                              END IF
+                             
+                              IF c = plds THEN EXIT FOR
+                              NEXT
+                              IF c = plds THEN EXIT FOR
+                              NEXT
+                              mouseshow
+                              DO
+                              CALL mousestatus(lb%, rb%, zx%, zy%)
+                              x = zx% \ 20
+                              y = zy% \ 20
+                              piece = y + x * 10 + 1
+                              IF lb% = -1 AND (piece < 107 OR piece > 127) THEN
+                              squaretype = piece
+                              EXIT DO
+                              END IF
+                             
+                              LOOP WHILE INKEY$ = ""
+                              choice$ = "c"
+                       
                         CASE "`"
                              CALL showarea(xscreen!, yscreen!)
+                              mouseshow
                               DO
                               CALL mousestatus(lb%, rb%, zx%, zy%)
                               IF lb% = -1 OR rb% = -1 THEN EXIT DO
                               LOOP WHILE INKEY$ = ""
+                              IF lb% = -1 THEN
+                              xadd! = (INT((zx% / 32) * 16)) / 16 - 4.5
+                              yadd! = (INT((zy% / 20) * 10)) / 10 - 4.5
+                              xscreen = xscreen + xadd!: yscreen = yscreen + yadd!
+                              END IF
                               choice$ = "c"
-                              
+                              mousehide
                         CASE "s"
                              currentpalette = currentpalette + 1
                              IF currentpalette > pals THEN currentpalette = 1
@@ -894,9 +931,9 @@ DATA "HARBOR6.PLD"
 '
 
 neworder:
-DATA 1,2                    
+DATA 1,2                  
 'road/river-bridge
-DATA 61,63,60,62            
+DATA 61,63,60,62          
 'rivbegin
 DATA 33,28,30,29,32,31,36,35,37,34,110,116
 'rivers
@@ -908,33 +945,33 @@ DATA 22,23,25,24,103,104,106,107,108,105
 'mouths/bridges
 DATA 6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21
 'mountains                                                                                                      2,13,14,15,16,17,18,19,20,21      'mountains
-DATA 4,3,5,59,56,57         
+DATA 4,3,5,59,56,57       
 'forests/trees
 DATA 83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98
 'walls
-DATA 27,117,118             
+DATA 27,117,118           
 'plains
-DATA 26,119,120             
+DATA 26,119,120           
 'oceans
-DATA 121                    
+DATA 121                  
 'boulder
-DATA 81,82,79,80            
+DATA 81,82,79,80          
 'deserts
-DATA 78,  75,  77,  76      
+DATA 78,  75,  77,  76    
 'deserts
-DATA 74                     
+DATA 74                   
 'deserts
 
 DATA -1
 
 'the next one would be # 241
-DATA 71,72,73             
+DATA 71,72,73           
 'harbors
-DATA 68,69,70               
+DATA 68,69,70             
 'caves
-DATA 111,112,113,114        
+DATA 111,112,113,114      
 'castle
-DATA 58                     
+DATA 58                   
 'huts
 DATA 99,100,101,102
 
@@ -2018,7 +2055,7 @@ DEFINT A-Z
 SUB special (xscreen!, yscreen!, direction%, currentscreen%(), xb!, yb!)
   ' with downleft at the screen above 1,1, make note of yfig!
 DIM r AS SINGLE
-DIM C AS SINGLE
+DIM c AS SINGLE
 
 xfig! = xscreen!
 yfig! = yscreen!
@@ -2036,13 +2073,13 @@ row1& = no: column1& = no
 IF direction / 3 = direction \ 3 THEN 'has right in it
             column = 16
             cstart = 1
-            C = (yscreen! - yb!) / 2
+            c = (yscreen! - yb!) / 2
            
-            IF ABS(C) > 2 THEN C = (yscreen! - (yb! + yscreenmax)) / 2
-            number! = C: C = round(3, number!)
+            IF ABS(c) > 2 THEN c = (yscreen! - (yb! + yscreenmax)) / 2
+            number! = c: c = round(3, number!)
             xv! = xscreen! + .9375: IF xv! >= xscreenmax THEN xv! = xv! - xscreenmax
-            column1& = (xv!) * 16 + ((yb! + C + .05) * 10) * (16 * xscreenmax)
-            IF (yb! + C + .05) > (yscreenmax - .9) THEN
+            column1& = (xv!) * 16 + ((yb! + c + .05) * 10) * (16 * xscreenmax)
+            IF (yb! + c + .05) > (yscreenmax - .9) THEN
                         cplace = (yscreenmax - yscreen!) * 10 + 1
                         number! = cplace: cplace = round(DP, number!)
                         column2& = (xv!) * 16 + ((0) * 10) * (16 * xscreenmax)
@@ -2050,11 +2087,11 @@ IF direction / 3 = direction \ 3 THEN 'has right in it
 ELSEIF INT((direction - 1) / 3) = ((direction - 1) / 3) THEN ' has left in it
             column = 1
             cstart = 2
-            C = (yscreen! - yb!) / 2
-            IF ABS(C) > 2 THEN C = (yscreen! - (yb! + yscreenmax)) / 2
+            c = (yscreen! - yb!) / 2
+            IF ABS(c) > 2 THEN c = (yscreen! - (yb! + yscreenmax)) / 2
             
-            column1& = (xfig!) * 16 + ((yb! + C + .05) * 10) * (16 * xscreenmax)
-            IF (yb! + C + .05) > (yscreenmax - .9) THEN   '??????????????????
+            column1& = (xfig!) * 16 + ((yb! + c + .05) * 10) * (16 * xscreenmax)
+            IF (yb! + c + .05) > (yscreenmax - .9) THEN   '??????????????????
                         cplace = (yscreenmax - yscreen!) * 10 + 1
                         number! = cplace: cplace = round(DP, number!)
                         column2& = (xfig!) * 16

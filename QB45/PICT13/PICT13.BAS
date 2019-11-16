@@ -2,7 +2,7 @@ DECLARE SUB merge (currentpalette, wholescreen&(), pal&(), picture&(), colorsfro
 DECLARE SUB MATH (picture&(), numbers%(), t!)
 DECLARE SUB savepalette (pcolors(), currentpalette)
 DECLARE SUB SaveAs (filename$, palfilename$)
-DECLARE SUB loadfile (CURRENTNAME$)
+DECLARE SUB loadfile (currentname$)
 DECLARE SUB RETRIEVE (size!, picture&(), wholescreen&(), currentpalette, pal&(), filename$)
 DECLARE SUB SAVE (px1, py1, px2, py2, picture&(), size, wholescreen&(), filename$)
 DECLARE SUB reproduce (px1, py1, px2, py2, picture&())
@@ -863,7 +863,7 @@ LOOP
 
 END SUB
 
-SUB loadfile (CURRENTNAME$)
+SUB loadfile (currentname$)
 
 SCREEN 12
 CLS
@@ -906,15 +906,27 @@ DO
 DO
         CALL mousestatus(lb%, rb%, zx%, zy%)
         choice$ = INKEY$
+       
+        IF choice$ <> CHR$(32) AND choice$ <> "" AND choice$ <> CHR$(13) AND choice$ <> CHR$(27) THEN
+        IF LEN(name$) > 0 THEN
+        IF ASC(LEFT$(name$, 1)) > 64 AND ASC(LEFT$(name$, 1)) < 91 THEN
+        name$ = ""
+        END IF
+        END IF
 
-LOOP WHILE lb% <> -1 AND choice$ = ""
+        name$ = name$ + LCASE$(choice$)
+        END IF
+LOOP UNTIL lb% = -1 OR (choice$ = CHR$(13) OR choice$ = CHR$(27))
 
 IF choice$ = CHR$(27) THEN
-CURRENTNAME$ = "ESC"
+currentname$ = "ESC"
 EXIT SUB
 END IF
 
+currentname$ = drivedir$ + name$ + ext$
+
 IF lb% = -1 THEN
+        name$ = ""
         row = zy% \ 8: column = zx% \ 8
         subcolumn = (column + 3) \ 18 + 1
         CALL mousehide
@@ -931,14 +943,14 @@ IF lb% = -1 THEN
                 NEXT i
                 CALL mouseshow
                 LOCATE 55, 5: PRINT "If "; drivedir$ + name$ + ext$; " is the file you want to use then press enter.        "
-                CURRENTNAME$ = drivedir$ + name$ + ext$
+                currentname$ = drivedir$ + name$ + ext$
         END IF
 END IF
 IF choice$ = CHR$(13) THEN
-IF CURRENTNAME$ <> "" THEN EXIT DO
+IF currentname$ <> "" THEN EXIT DO
 END IF
-LOOP
 
+LOOP
 END SUB
 
 SUB MATH (picture&(), numbers%(), t)
@@ -970,17 +982,17 @@ mousehide
 GET (0, 0)-(319, 199), wholescreen&(0)
 COLOR 255
 LOCATE 10, 10: PRINT "  Choose the name of the file to Merge  "
-CALL loadfile(CURRENTNAME$)
+CALL loadfile(currentname$)
 SCREEN 13
 PUT (0, 0), wholescreen&(0), PSET
 PALETTE USING pal&(0, currentpalette)
 
-IF CURRENTNAME$ = "ESC" THEN
+IF currentname$ = "ESC" THEN
 mouseshow
 EXIT SUB
 END IF
 
-e$ = CURRENTNAME$
+e$ = currentname$
 n = FREEFILE
 
 OPEN e$ FOR BINARY AS n
@@ -1185,13 +1197,13 @@ END SUB
 
 SUB RETRIEVE (size, picture&(), wholescreen&(), currentpalette, pal&(), filename$)
 GET (0, 0)-(319, 199), wholescreen&(0)
-CALL loadfile(CURRENTNAME$)
+CALL loadfile(currentname$)
 
 SCREEN 13
 PUT (0, 0), wholescreen&(0), PSET
 PALETTE USING pal&(0, currentpalette)
 
-IF CURRENTNAME$ = "ESC" THEN
+IF currentname$ = "ESC" THEN
 LOCATE 3, 2: PRINT "                              "
 mouseshow
 EXIT SUB
@@ -1199,8 +1211,10 @@ END IF
 
 
 LOCATE 3, 2: PRINT " Opening                      "
-filename$ = CURRENTNAME$
+filename$ = currentname$
 n = FREEFILE
+
+
 OPEN filename$ FOR BINARY AS n
 
 FOR i = 0 TO size
